@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace Folderify
+{
+    [default_interface]
+    runtimeclass HistoryPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        HistoryPage();
+        Int32 MyProperty;
+    }
+}

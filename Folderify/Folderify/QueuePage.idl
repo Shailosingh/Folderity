@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace Folderify
+{
+    [default_interface]
+    runtimeclass QueuePage : Microsoft.UI.Xaml.Controls.Page
+    {
+        QueuePage();
+        Int32 MyProperty;
+    }
+}

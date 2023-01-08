@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace Folderify
+{
+    [default_interface]
+    runtimeclass PlaylistSelectionPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        PlaylistSelectionPage();
+        Int32 MyProperty;
+    }
+}
