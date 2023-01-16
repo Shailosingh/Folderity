@@ -1,12 +1,12 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
 #include "pch.h"
 #include "MainWindow.xaml.h"
 #include "winrt/Windows.UI.Xaml.Interop.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
+
+//This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
+#include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
