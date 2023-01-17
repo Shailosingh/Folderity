@@ -37,20 +37,22 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!--Music info section-->
             <Grid Grid.Column="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
 
-                <Rectangle Grid.Column="0" Fill="Red" Margin="5,5,5,5"/>
+                <Rectangle Grid.Column="0" Fill="Red" Margin="0,0,5,0"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,5,5,5">
-                    <TextBlock Text="Song Name" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>
-                    <TextBlock Text="Playlist Name" FontWeight="Thin" Foreground="LightGray" HorizontalAlignment="Left"/>
+                    <TextBlock x:Name="SongNameBlock" Text="Song Name" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>
+                    <TextBlock x:Name="PlaylistNameBlock" Text="Playlist Name" FontWeight="Thin" Foreground="LightGray" HorizontalAlignment="Left"/>
                 </StackPanel>
             </Grid>
 
+            <!--Music controls section-->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="2*"/>
@@ -58,18 +60,37 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10">
-                    <Ellipse Fill="Green" Height="30" Width="30" Margin="0,0,20,0"/>
-                    <Ellipse Fill="Red" Height="40" Width="40" Margin="0,0,20,0"/>
-                    <Ellipse Fill="Green" Height="30" Width="30"/>
+                    <AppBarButton x:Name="PreviousButton" ToolTipService.ToolTip="Previous Song" Icon="Previous" Height="30" Width="30" Margin="0,0,20,0"/>
+                    <AppBarButton x:Name="PlayPauseButton" ToolTipService.ToolTip="Play" Icon="Play" Height="40" Width="40" Margin="0,0,20,0"/>
+                    <AppBarButton x:Name="NextButton" ToolTipService.ToolTip="Next Song" Icon="Next" Height="30" Width="30"/>
                 </StackPanel>
 
-                <Slider Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="CurrentTimestampBlock" Grid.Column="0" Text="0:00" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Slider x:Name="TrackBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" IsThumbToolTipEnabled="False"/>
+                    <TextBlock x:Name="TotalSongDurationBlock" Grid.Column="2" Text="0:00" FontWeight="SemiBold"  Foreground="White" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                </Grid>
             </Grid>
 
+            <!--Music options section-->
             <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,20,10,20">
-                <AppBarButton Icon="Volume"/>
-                <AppBarButton Icon="RepeatAll"/>
-                <AppBarButton Icon="Shuffle"/>
+                <AppBarButton x:Name="VolumeButton" ToolTipService.ToolTip="Double-Click To Mute" Icon="Volume">
+                    <AppBarButton.Flyout>
+                        <Flyout>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                                <Slider x:Name="VolumeControlSlider" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Height="200" TickFrequency="10" TickPlacement="Outside"/>
+                            </StackPanel>
+                        </Flyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
+                <AppBarButton x:Name="RepeatButton" ToolTipService.ToolTip="Repeat Off" Icon="RepeatAll"/>
+                <AppBarButton x:Name="ShuffleButton" ToolTipService.ToolTip="Shuffle" Icon="Shuffle"/>
             </StackPanel>
         </Grid>
     </Grid>
