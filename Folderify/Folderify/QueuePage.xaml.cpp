@@ -7,11 +7,12 @@
 #include "QueuePage.g.cpp"
 #endif
 
+#include "MusicController.h"
+
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+MusicController* ControllerObject;
 
 namespace winrt::Folderify::implementation
 {
@@ -28,5 +29,11 @@ namespace winrt::Folderify::implementation
     void QueuePage::MyProperty(int32_t /* value */)
     {
         throw hresult_not_implemented();
+    }
+
+    //Event handlers-------------------------------------------------------------------------------
+    void QueuePage::OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e)
+    {
+        //Retrieve the MusicController pointer
     }
 }

@@ -10,7 +10,42 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="Playlist Selection Page" FontSize="48" />
-    </StackPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" Margin="5,5,5,5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+
+            <ListView x:Name="AllPlaylistsListView"
+                      Grid.Row="0"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      SelectionMode="Single" 
+                      Background="DarkRed"
+                      Margin="0,0,0,5"/>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <AppBarButton x:Name="AddPlaylistButton" ToolTipService.ToolTip="Add Playlist" Icon="Add"/>
+                <AppBarButton x:Name="RefreshButton" ToolTipService.ToolTip="Refresh All Playlists" Icon="Refresh"/>
+                <TextBlock x:Name="NumberOfPlaylistsTextBlock" Text="0 playlists" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="1" Margin="5,5,5,5">
+            <ListView x:Name="PlaylistItemsListView" 
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      SelectionMode="Single" 
+                      CanReorderItems="True" 
+                      CanDragItems="True" 
+                      AllowDrop="True"
+                      Background="DarkBlue"/>
+        </Grid>
+    </Grid>
 </Page>

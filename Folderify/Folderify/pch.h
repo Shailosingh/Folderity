@@ -29,3 +29,9 @@
 
 //For xaml_typename
 #include "winrt/Windows.UI.Xaml.Interop.h"
+
+//For the tap handlers
+#include <winrt/Microsoft.UI.Xaml.Input.h>
+
+//For accessing the local folder
+#include <winrt/Windows.Storage.h>

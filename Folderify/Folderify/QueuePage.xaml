@@ -10,7 +10,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="Queue Page" FontSize="48" />
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="NumberOfSongsInQueueTextBlock" Grid.Row="0" Text="0 songs" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left" Margin="20,0,0,0"/>
+
+        <ListView x:Name="QueueListView" 
+                  Grid.Row="1"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  SelectionMode="Single" 
+                  CanReorderItems="True" 
+                  CanDragItems="True" 
+                  AllowDrop="True"
+                  Background="DarkBlue"
+                  Margin="20,0,20,20"/>
+    </Grid>
 </Page>

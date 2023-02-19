@@ -89,8 +89,8 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton x:Name="RepeatButton" ToolTipService.ToolTip="Repeat Off" Icon="RepeatAll"/>
-                <AppBarButton x:Name="ShuffleButton" ToolTipService.ToolTip="Shuffle" Icon="Shuffle"/>
+                <AppBarButton x:Name="RepeatButton" ToolTipService.ToolTip="Repeat Off" Icon="RepeatAll" Tapped="RepeatButton_Tapped"/>
+                <AppBarButton x:Name="ShuffleButton" ToolTipService.ToolTip="Shuffle" Icon="Shuffle" Tapped="ShuffleButton_Tapped"/>
             </StackPanel>
         </Grid>
     </Grid>

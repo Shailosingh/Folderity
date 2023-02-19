@@ -14,6 +14,9 @@ namespace winrt::Folderify::implementation
         int32_t MyProperty();
         void MyProperty(int32_t value);
 
+        //Events
+        void OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e);
+
     };
 }
 

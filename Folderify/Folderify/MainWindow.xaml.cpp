@@ -5,20 +5,30 @@
 #include "MainWindow.g.cpp"
 #endif
 
-//This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
-#include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h"
+#include "MusicController.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+MusicController* ControllerObject;
 
 namespace winrt::Folderify::implementation
 {
     MainWindow::MainWindow()
     {
         InitializeComponent();
+
+		//Pass the main window to the MusicController and create instance
+        try
+        {
+            ControllerObject = new MusicController(this);
+        }
+		catch (const std::exception& e)
+		{
+			std::string error = e.what();
+            OutputDebugStringA(error.c_str());
+            exit(1);
+		}
     }
 
     int32_t MainWindow::MyProperty()
@@ -30,39 +40,50 @@ namespace winrt::Folderify::implementation
     {
         throw hresult_not_implemented();
     }
-}
 
-
-void Folderify::implementation::MainWindow::MainMenu_ItemInvoked(winrt::Microsoft::UI::Xaml::Controls::NavigationView const& sender, winrt::Microsoft::UI::Xaml::Controls::NavigationViewItemInvokedEventArgs const& args)
-{
-    //First check if Settings was tapped
-    if (args.IsSettingsInvoked())
+    void MainWindow::MainMenu_ItemInvoked(winrt::Microsoft::UI::Xaml::Controls::NavigationView const& sender, winrt::Microsoft::UI::Xaml::Controls::NavigationViewItemInvokedEventArgs const& args)
     {
-        //Navigate to Settings Page
-        ContentFrame().Navigate(xaml_typename<Folderify::SettingsPage>());
+        //First check if Settings was tapped
+        if (args.IsSettingsInvoked())
+        {
+            //Navigate to Settings Page
+            ContentFrame().Navigate(xaml_typename<Folderify::SettingsPage>());
+        }
+
+        //Handle navigations to every page
+        if (args.InvokedItemContainer() != nullptr)
+        {
+            IInspectable tag = args.InvokedItemContainer().Tag();
+            hstring tagValue = unbox_value<hstring>(tag);
+
+            if (tagValue == L"Queue")
+            {
+                ContentFrame().Navigate(xaml_typename<Folderify::QueuePage>());
+            }
+            else if (tagValue == L"Playlists")
+            {
+                ContentFrame().Navigate(xaml_typename<Folderify::PlaylistSelectionPage>());
+            }
+            else if (tagValue == L"Songs")
+            {
+                ContentFrame().Navigate(xaml_typename<Folderify::SongsPage>());
+            }
+            else if (tagValue == L"History")
+            {
+                ContentFrame().Navigate(xaml_typename<Folderify::HistoryPage>());
+            }
+        }
     }
 
-    //Handle navigations to every page
-    if (args.InvokedItemContainer() != nullptr)
-    {
-        IInspectable tag = args.InvokedItemContainer().Tag();
-        hstring tagValue = unbox_value<hstring>(tag);
 
-        if (tagValue == L"Queue")
-        {
-			ContentFrame().Navigate(xaml_typename<Folderify::QueuePage>());
-		}
-        else if (tagValue == L"Playlists")
-        {
-            ContentFrame().Navigate(xaml_typename<Folderify::PlaylistSelectionPage>());
-        }
-        else if (tagValue == L"Songs")
-        {
-            ContentFrame().Navigate(xaml_typename<Folderify::SongsPage>());
-        }
-		else if (tagValue == L"History")
-		{
-			ContentFrame().Navigate(xaml_typename<Folderify::HistoryPage>());
-		}
+    void MainWindow::RepeatButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+        //TODO: Alternate between repeat modes
+    }
+
+
+    void MainWindow::ShuffleButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+        //TODO: Shuffle current queue
     }
 }

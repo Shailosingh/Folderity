@@ -18,9 +18,11 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="MusicController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="MusicController.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
