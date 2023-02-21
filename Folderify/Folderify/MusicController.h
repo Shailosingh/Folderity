@@ -6,7 +6,7 @@
 #include "MainWindow.xaml.h"
 
 //This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
-#include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h"
+#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h"
 
 typedef struct Song
 {

@@ -12,8 +12,6 @@
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
-MusicController* ControllerObject;
-
 namespace winrt::Folderify::implementation
 {
     QueuePage::QueuePage()

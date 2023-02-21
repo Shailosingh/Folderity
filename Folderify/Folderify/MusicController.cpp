@@ -66,7 +66,12 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 			throw std::exception("Failed to create queue file\n");
 		}
 
-		//TODO - Make History file
+		//Make History file
+		fileCreated = UpdateHistoryFile();
+		if (!fileCreated)
+		{
+			throw std::exception("Failed to create history file\n");
+		}
 
 		//Initialize the queue to hold 100 songs and the list of playlists to have 10 playlists by default
 		PlayerQueue.reserve(100);
