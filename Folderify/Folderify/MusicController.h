@@ -47,6 +47,7 @@ private:
 	//Event fields and functions
 	void EventThread();
 	double NewSongPosition;
+	bool EventLoopRunning;
 	bool ProgramRunning;
 	bool SongPositionBarHeld;
 	
@@ -64,6 +65,10 @@ private:
 	bool UpdatePlaylistOrderFile(const Playlist& playlistObject);
 	void LoadPlaylistIntoQueue(const Playlist& playlistObject);
 
+	//Song loaders
+	void LoadSongIntoPlayer(uint64_t index);
+	bool LoadSongIntoPlayer_Aux(uint64_t index);
+
 	//Dispatcher functions
 	void DispatchSongTitle(std::wstring title);
 	void DispatchPlaylistTitle(std::wstring title);
@@ -71,14 +76,16 @@ private:
 	void DispatchPreviousButtonToggle(bool isEnabled);
 	void DispatchNextButtonToggle(bool isEnabled);
 	void DispatchPlayButtonToggle(bool isEnabled);
+	void DispatchPlayButtonIcon(bool isPlayIcon);
 	void DispatchTrackBarToggle(bool isEnabled);
 	
 public:
-	//Public events
+	//Public events (TODO: Use these for something. Especially if you don't make the lists public)
 	HANDLE SongChangedEvent;
 	HANDLE HistoryUpdatedEvent;
 
-	//Public lists (made public to be data sources for ListViews)
+	//Public mutexes
+	HANDLE QueueMutex;
 	
 	//Getters
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
@@ -97,5 +104,5 @@ public:
 	
 	//Destructors and Constructors
 	MusicController(winrt::Folderify::implementation::MainWindow* mainWindow);
-	~MusicController();
+	void CloseController();
 };

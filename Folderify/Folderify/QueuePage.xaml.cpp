@@ -32,6 +32,6 @@ namespace winrt::Folderify::implementation
     //Event handlers-------------------------------------------------------------------------------
     void QueuePage::OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e)
     {
-        //Retrieve the MusicController pointer
+        
     }
 }

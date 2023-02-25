@@ -19,11 +19,15 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	MainWindowPointer = mainWindow;
 	NewSongPosition = 0;
 	ProgramRunning = true;
+	EventLoopRunning = false;
 	SongPositionBarHeld = false;
 
 	//Initialize events
 	SongChangedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	HistoryUpdatedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+	//Initialize mutex
+	QueueMutex = CreateMutex(NULL, FALSE, NULL);
 	
 	//Test this out. DELETE .vs folder,CLEAN and REBUILD solution first
 	MainWindowPointer->Title(L"Folderity");
@@ -118,31 +122,64 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	{
 		throw std::exception("Failed to load history from history file\n");
 	}
+
+	//Launch event thread that shall manage song changes and TrackBar updates
+	std::thread eventThreadManager(&MusicController::EventThread, this);
+	eventThreadManager.detach();
 }
 
-MusicController::~MusicController()
+void MusicController::CloseController()
 {
-	//TODO
+	//Close the music player
+	SoundPlayer->Shutdown();
+	
+	//Close event loop
+	ProgramRunning = false;
+	while (EventLoopRunning);
+	
+	//Save up the queue file
+	UpdateQueueFile();
 }
 
 void MusicController::EventThread()
 {
+	//Notify that the event loop is running
+	EventLoopRunning = true;
+	
+	//Try to set the song
+	LoadSongIntoPlayer(CurrentSongIndex);
+
+	//Immediately pause the song
+	Pause();
+
+	//Main program loop
 	while (ProgramRunning)
 	{
-		while(GetPlayerState() != PlayerState::Ready)
+		//Update current position of song until song is done
+		while(GetPlayerState() == PlayerState::Playing || GetPlayerState() == PlayerState::Paused)
 		{
-			//TODO: Update current position of song as long as the bar isn't being held
+			//Update current position of song as long as the bar isn't being held
 			if (!SongPositionBarHeld)
 			{
-				
+				DispatchCurrentSongPositionAndDuration();
 			}
 			
 			//Sleep for 100 ms so CPU doesn't freak out
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
-		//When it is ready, go to the next song
+		//Load next song in the queue if and only if the old song ended
+		if (GetPlayerState() == PlayerState::PresentationEnd)
+		{
+			LoadSongIntoPlayer(CurrentSongIndex + 1);
+		}
+
+		//Sleep for 100 ms so CPU doesn't freak out
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+
+	//Notify that the event loop is no longer running
+	EventLoopRunning = false;
 }
 
 //File IO Initialization helpers-------------------------------------------------------------------
@@ -672,6 +709,110 @@ void MusicController::LoadPlaylistIntoQueue(const Playlist& playlistObject)
 	CurrentSongIndex = 0;
 }
 
+//Song Loaders-------------------------------------------------------------------------------------
+
+/// <summary>
+/// Takes the index and tries to play that song in the queue. If unable to play that song, delete it
+/// and traverse queue until a playable song is found and played. If no playable song is found, the queue
+/// will be empty. The CurrentIndex will be set to the index of the song currently playing or 0 if it is empty.
+/// </summary>
+/// <param name="index">The index of the song playing</param>
+void MusicController::LoadSongIntoPlayer(uint64_t index)
+{
+	//Ensure only one thread is changing around the queue and starting songs at once
+	WaitForSingleObject(QueueMutex, INFINITE);
+	
+	if (!PlayerQueue.empty())
+	{
+		bool successfullySetSong;
+		do
+		{
+			//Ensure the song index is within range
+			if (!(index < PlayerQueue.size()))
+			{
+				index = 0;
+			}
+
+			//Try to load up the song into the player. If not possible, delete it and move on
+			successfullySetSong = LoadSongIntoPlayer_Aux(index);
+			if (!successfullySetSong)
+			{
+				PlayerQueue.erase(PlayerQueue.begin() + index);
+
+				//If the queue is now empty, set the index back to default 0 and exit
+				if (PlayerQueue.empty())
+				{
+					index = 0;
+					break;
+				}
+			}
+		} while (!successfullySetSong);
+		
+		//Set the current index as the index of the song that has started playing
+		CurrentSongIndex = index;
+	}
+
+	//If the queue is empty, set the current song index to default 0
+	else
+	{
+		CurrentSongIndex = 0;
+	}
+
+	//Release the mutex
+	ReleaseMutex(QueueMutex);
+}
+
+/// <summary>
+/// Takes the index of a song in the queue, loads that song into the music player and plays it
+/// </summary>
+/// <param name="index">Index of song in queue</param>
+/// <returns>Whether song is loaded or not</returns>
+bool MusicController::LoadSongIntoPlayer_Aux(uint64_t index)
+{
+	//First ensure the index is a valid index
+	if (!(index < PlayerQueue.size()))
+	{
+		return false;
+	}
+
+	//Stop the session just in case it is playing a song
+	HRESULT hr = SoundPlayer->Stop();
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	//Disable all the buttons and set image to default while song is being found
+	DispatchPreviousButtonToggle(false);
+	DispatchPlayButtonToggle(false);
+	DispatchPlayButtonIcon(false);
+	DispatchNextButtonToggle(false);
+	DispatchSongTitle(L"Waiting For Song...");
+	DispatchPlaylistTitle(L"Waiting For Playlist...");
+	//TODO: Set image to default
+
+	//Get the whole path of the song
+	fs::path songPath = fs::path(PlayerQueue[index].playlistPath) / PlayerQueue[index].songNameWithExtension;
+
+	//Load the song into the MMFSoundPlayer
+	hr = SoundPlayer->SetFileIntoPlayer(songPath.wstring().c_str());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	//Change the state of the buttons, song name, playlist name and image
+	DispatchPreviousButtonToggle(index != 0);
+	DispatchPlayButtonToggle(true);
+	DispatchPlayButtonIcon(true);
+	DispatchNextButtonToggle(index != (PlayerQueue.size() - 1));
+	DispatchSongTitle(fs::path(PlayerQueue[index].songNameWithExtension).stem());
+	DispatchPlaylistTitle(fs::path(PlayerQueue[index].playlistPath).filename());
+	//TODO: Set image to song's filename with either png, jpeg jpg extension
+
+	return true;
+}
+
 //General Helpers----------------------------------------------------------------------------------
 std::wstring MusicController::Convert100NanoSecondsToTimestamp(UINT64 input100NanoSeconds)
 {
@@ -690,6 +831,33 @@ PlayerState MusicController::GetPlayerState()
 //Setters------------------------------------------------------------------------------------------
 
 //Player Controls----------------------------------------------------------------------------------
+void MusicController::Play()
+{
+	HRESULT hr = SoundPlayer->Play();
+	if (SUCCEEDED(hr))
+	{
+		DispatchPlayButtonIcon(true);
+	}
+}
+
+void MusicController::Pause()
+{
+	HRESULT hr = SoundPlayer->Pause();
+	if (SUCCEEDED(hr))
+	{
+		DispatchPlayButtonIcon(false);
+	}
+}
+
+void MusicController::Previous()
+{
+	LoadSongIntoPlayer(CurrentSongIndex - 1);
+}
+
+void MusicController::Next()
+{
+	LoadSongIntoPlayer(CurrentSongIndex + 1);
+}
 
 //Dispatcher fuctions------------------------------------------------------------------------------
 void MusicController::DispatchSongTitle(std::wstring title)
@@ -728,8 +896,12 @@ void MusicController::DispatchCurrentSongPositionAndDuration()
 	std::wstring currentTimestamp = Convert100NanoSecondsToTimestamp(SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits());
 	std::wstring totalTimestamp = Convert100NanoSecondsToTimestamp(SoundPlayer->GetAudioFileDuration_100NanoSecondUnits());
 	
-	//Get percent (0.0 - 1.0) for song position
-	double songPositionPercent = (SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits() * 100) / SoundPlayer->GetAudioFileDuration_100NanoSecondUnits();
+	//Get percent (0-100) for song position
+	double songPositionPercent = 0;
+	if (SoundPlayer->GetAudioFileDuration_100NanoSecondUnits() != 0)
+	{
+		songPositionPercent = (SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits() * 100) / SoundPlayer->GetAudioFileDuration_100NanoSecondUnits();
+	}
 	
 	if (MainWindowPointer->DispatcherQueue().HasThreadAccess())
 	{
@@ -789,6 +961,37 @@ void MusicController::DispatchPlayButtonToggle(bool isEnabled)
 		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [isEnabled, this]()
 			{
 				MainWindowPointer->PlayPauseButton().IsEnabled(isEnabled);
+			});
+	}
+}
+
+void MusicController::DispatchPlayButtonIcon(bool isPlayIcon)
+{
+	if (MainWindowPointer->DispatcherQueue().HasThreadAccess())
+	{
+		if (isPlayIcon)
+		{
+			MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Play));
+		}
+		
+		else
+		{
+			MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Pause));
+		}
+	}
+	else
+	{
+		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [isPlayIcon, this]()
+			{
+				if (isPlayIcon)
+				{
+					MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Play));
+				}
+
+				else
+				{
+					MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Pause));
+				}
 			});
 	}
 }

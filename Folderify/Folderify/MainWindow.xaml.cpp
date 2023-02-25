@@ -86,4 +86,27 @@ namespace winrt::Folderify::implementation
     {
         //TODO: Shuffle current queue
     }
+    
+    void MainWindow::PreviousButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+		ControllerObject->Previous();
+    }
+
+
+    void MainWindow::PlayPauseButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+        ControllerObject->Play();
+    }
+
+
+    void MainWindow::NextButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+        ControllerObject->Next();
+    }
+
+    void MainWindow::Window_Closed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::WindowEventArgs const& args)
+    {
+        ControllerObject->CloseController();
+        delete ControllerObject;
+    }
 }

@@ -5,7 +5,8 @@
     xmlns:local="using:Folderify"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Closed="Window_Closed">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -40,11 +41,11 @@
             <!--Music info section-->
             <Grid Grid.Column="0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
 
-                <Rectangle Grid.Column="0" Fill="Red" Margin="0,0,5,0"/>
+                <Image x:Name="SongImage" Grid.Column="0" Stretch="Fill" Margin="0,0,5,0" Source="//Assets/Logo.png" />
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,5,5,5">
                     <TextBlock x:Name="SongNameBlock" Text="Song Name" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>
@@ -60,9 +61,9 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10">
-                    <AppBarButton x:Name="PreviousButton" ToolTipService.ToolTip="Previous Song" Icon="Previous" Height="30" Width="30" Margin="0,0,20,0"/>
-                    <AppBarButton x:Name="PlayPauseButton" ToolTipService.ToolTip="Play" Icon="Play" Height="40" Width="40" Margin="0,0,20,0"/>
-                    <AppBarButton x:Name="NextButton" ToolTipService.ToolTip="Next Song" Icon="Next" Height="30" Width="30"/>
+                    <AppBarButton x:Name="PreviousButton" Tapped="PreviousButton_Tapped" ToolTipService.ToolTip="Previous Song" IsEnabled="False" Icon="Previous" Height="30" Width="30" Margin="0,0,20,0"/>
+                    <AppBarButton x:Name="PlayPauseButton" Tapped="PlayPauseButton_Tapped" ToolTipService.ToolTip="Play" IsEnabled="False" Icon="Play" Height="40" Width="40" Margin="0,0,20,0"/>
+                    <AppBarButton x:Name="NextButton" Tapped="NextButton_Tapped" ToolTipService.ToolTip="Next Song" IsEnabled="False" Icon="Next" Height="30" Width="30"/>
                 </StackPanel>
 
                 <Grid Grid.Row="1">
@@ -73,7 +74,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock x:Name="CurrentTimestampBlock" Grid.Column="0" Text="0:00" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                    <Slider x:Name="TrackBar" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" IsThumbToolTipEnabled="False"/>
+                    <Slider x:Name="TrackBar" Grid.Column="1" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Top" IsThumbToolTipEnabled="False"/>
                     <TextBlock x:Name="TotalSongDurationBlock" Grid.Column="2" Text="0:00" FontWeight="SemiBold"  Foreground="White" VerticalAlignment="Center" Margin="5,0,0,0"/>
                 </Grid>
             </Grid>
