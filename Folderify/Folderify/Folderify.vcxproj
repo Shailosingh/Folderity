@@ -143,6 +143,7 @@
       <DependentUpon>SettingsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="SharedWindowVariables.h" />
     <ClInclude Include="SongsPage.xaml.h">
       <DependentUpon>SongsPage.xaml</DependentUpon>
       <SubType>Code</SubType>

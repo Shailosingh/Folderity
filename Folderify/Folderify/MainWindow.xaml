@@ -74,7 +74,16 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock x:Name="CurrentTimestampBlock" Grid.Column="0" Text="0:00" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                    <Slider x:Name="TrackBar" Grid.Column="1" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Top" IsThumbToolTipEnabled="False"/>
+                    <Slider x:Name="TrackBar" 
+                            Grid.Column="1" 
+                            PointerPressed="TrackBar_PointerPressed"
+                            PointerReleased="TrackBar_PointerReleased"
+                            PointerCanceled="TrackBar_PointerCanceled"
+                            PointerCaptureLost="TrackBar_PointerCanceled"
+                            IsEnabled="False" 
+                            HorizontalAlignment="Stretch" 
+                            VerticalAlignment="Top" 
+                            IsThumbToolTipEnabled="False"/>
                     <TextBlock x:Name="TotalSongDurationBlock" Grid.Column="2" Text="0:00" FontWeight="SemiBold"  Foreground="White" VerticalAlignment="Center" Margin="5,0,0,0"/>
                 </Grid>
             </Grid>

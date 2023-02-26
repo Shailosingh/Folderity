@@ -23,6 +23,7 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="MusicController.h" />
+    <ClInclude Include="SharedWindowVariables.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

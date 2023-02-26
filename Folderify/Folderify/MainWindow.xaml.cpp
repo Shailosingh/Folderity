@@ -6,11 +6,10 @@
 #endif
 
 #include "MusicController.h"
+#include "SharedWindowVariables.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
-
-MusicController* ControllerObject;
 
 namespace winrt::Folderify::implementation
 {
@@ -108,5 +107,27 @@ namespace winrt::Folderify::implementation
     {
         ControllerObject->CloseController();
         delete ControllerObject;
+    }
+
+    void MainWindow::TrackBar_PointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    {
+		ControllerObject->SongPositionBarHeld = true;
+    }
+
+
+    void MainWindow::TrackBar_PointerReleased(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    {
+        ControllerObject->Seek(TrackBar().Value());
+		ControllerObject->SongPositionBarHeld = false;
+    }
+
+
+    void MainWindow::TrackBar_PointerCanceled(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
+    {
+		if (ControllerObject->SongPositionBarHeld)
+		{
+            ControllerObject->Seek(TrackBar().Value());
+			ControllerObject->SongPositionBarHeld = false;
+		}
     }
 }

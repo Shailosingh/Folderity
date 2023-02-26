@@ -8,6 +8,7 @@
 #endif
 
 #include "MusicController.h"
+#include "SharedWindowVariables.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -27,11 +28,5 @@ namespace winrt::Folderify::implementation
     void QueuePage::MyProperty(int32_t /* value */)
     {
         throw hresult_not_implemented();
-    }
-
-    //Event handlers-------------------------------------------------------------------------------
-    void QueuePage::OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e)
-    {
-        
     }
 }

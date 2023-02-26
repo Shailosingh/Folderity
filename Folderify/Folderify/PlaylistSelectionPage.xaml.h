@@ -13,6 +13,8 @@ namespace winrt::Folderify::implementation
 
         int32_t MyProperty();
         void MyProperty(int32_t value);
+        void AddPlaylistButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e);
+        void RefreshButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e);
     };
 }
 

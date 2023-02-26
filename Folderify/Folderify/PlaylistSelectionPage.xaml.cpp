@@ -7,11 +7,14 @@
 #include "PlaylistSelectionPage.g.cpp"
 #endif
 
+#include "MusicController.h"
+
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+//Source lists for the Playlist list and the song list for the playlist
+std::vector<std::wstring> PlaylistList;
+std::vector<SongSourceObject> SongList;
 
 namespace winrt::Folderify::implementation
 {
@@ -28,5 +31,16 @@ namespace winrt::Folderify::implementation
     void PlaylistSelectionPage::MyProperty(int32_t /* value */)
     {
         throw hresult_not_implemented();
+    }
+
+    void PlaylistSelectionPage::AddPlaylistButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+
+    }
+
+
+    void PlaylistSelectionPage::RefreshButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    {
+
     }
 }

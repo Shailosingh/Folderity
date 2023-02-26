@@ -859,6 +859,11 @@ void MusicController::Next()
 	LoadSongIntoPlayer(CurrentSongIndex + 1);
 }
 
+void MusicController::Seek(double percent)
+{
+	SoundPlayer->Seek((percent * SoundPlayer->GetAudioFileDuration_100NanoSecondUnits())/100);
+}
+
 //Dispatcher fuctions------------------------------------------------------------------------------
 void MusicController::DispatchSongTitle(std::wstring title)
 {

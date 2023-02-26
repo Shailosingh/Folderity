@@ -31,8 +31,8 @@
                       Margin="0,0,0,5"/>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <AppBarButton x:Name="AddPlaylistButton" ToolTipService.ToolTip="Add Playlist" Icon="Add"/>
-                <AppBarButton x:Name="RefreshButton" ToolTipService.ToolTip="Refresh All Playlists" Icon="Refresh"/>
+                <AppBarButton x:Name="AddPlaylistButton" Tapped="AddPlaylistButton_Tapped" ToolTipService.ToolTip="Add Playlist" Icon="Add"/>
+                <AppBarButton x:Name="RefreshButton" Tapped="RefreshButton_Tapped" ToolTipService.ToolTip="Refresh All Playlists" Icon="Refresh"/>
                 <TextBlock x:Name="NumberOfPlaylistsTextBlock" Text="0 playlists" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>

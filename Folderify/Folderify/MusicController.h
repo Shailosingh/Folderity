@@ -14,6 +14,12 @@ typedef struct Song
 	std::wstring playlistPath;
 } Song;
 
+typedef struct SongSourceObject
+{
+	std::wstring songName;
+	std::wstring playlistName;
+} SongSourceObject;
+
 typedef struct Playlist
 {
 	std::wstring playlistPath;
@@ -49,7 +55,6 @@ private:
 	double NewSongPosition;
 	bool EventLoopRunning;
 	bool ProgramRunning;
-	bool SongPositionBarHeld;
 	
 	//File IO Initialization helpers
 	bool LoadAllPlaylistsFromMasterFile();
@@ -84,6 +89,9 @@ public:
 	HANDLE SongChangedEvent;
 	HANDLE HistoryUpdatedEvent;
 
+	//Datafields
+	bool SongPositionBarHeld;
+	
 	//Public mutexes
 	HANDLE QueueMutex;
 	
@@ -99,6 +107,7 @@ public:
 	void Pause();
 	void Previous();
 	void Next();
+	void Seek(double percent);
 	void Shuffle();
 	void RepeatToggle();
 	
