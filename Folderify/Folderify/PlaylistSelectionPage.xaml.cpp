@@ -38,7 +38,6 @@ namespace winrt::Folderify::implementation
 
     }
 
-
     void PlaylistSelectionPage::RefreshButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
     {
 

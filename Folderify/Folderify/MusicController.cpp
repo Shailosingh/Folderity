@@ -828,8 +828,73 @@ PlayerState MusicController::GetPlayerState()
 	return SoundPlayer->GetPlayerState();
 }
 
-//Setters------------------------------------------------------------------------------------------
+void MusicController::GetPlaylistNames(std::vector<std::wstring>& playlistSource)
+{
+	//Clear out the input playlistSource vector and reserve enough memory for each playlist
+	playlistSource.clear();
+	playlistSource.reserve(AllPlaylists.size());
 
+	//Add all playlist names in order
+	for (const Playlist& playlist : AllPlaylists)
+	{
+		playlistSource.emplace_back(fs::path(playlist.playlistPath).filename());
+	}
+}
+
+void MusicController::GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<SongSourceObject>& playlistSongSource)
+{
+	//Clear out the input playlistSongSource vector and reserve enough memory for each song
+	playlistSongSource.clear();
+	playlistSongSource.reserve(AllPlaylists[playlistIndex].songNamesWithExtension.size());
+
+	//Add all song names in order
+	for (const std::wstring& songName : AllPlaylists[playlistIndex].songNamesWithExtension)
+	{
+		playlistSongSource.emplace_back(fs::path(songName).stem());
+	}
+}
+
+//Setters------------------------------------------------------------------------------------------
+bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPath)
+{
+	//Ensure playlist folder path is valid
+	if (!fs::exists(newPlaylistFolderPath))
+	{
+		return false;
+	}
+	
+	//Create the new playlist object
+	Playlist newPlaylist;
+	newPlaylist.playlistPath = newPlaylistFolderPath;
+
+	//Get all MP3s and WAVs in the folder and place them in the playlist
+	for (const fs::directory_entry& entry : fs::directory_iterator(newPlaylistFolderPath))
+	{
+		//Get the file extension
+		std::wstring fileExtension = entry.path().extension().wstring();
+
+		//Lowercase the file extension 
+		std::transform(fileExtension.begin(), fileExtension.end(), fileExtension.begin(), ::tolower);
+		
+		//If the song is an mp3 or wav, add it to the playlist
+		if (fileExtension == L".mp3" || fileExtension == L".wav")
+		{
+			newPlaylist.songNamesWithExtension.emplace_back(entry.path().filename());
+		}
+	}
+
+	//Add the new playlist to the list of playlists
+	AllPlaylists.push_back(newPlaylist);
+
+	//Create the playlist order file for the playlist
+	UpdatePlaylistOrderFile(AllPlaylists[AllPlaylists.size() - 1]);
+
+	//Update the master playlist file
+	UpdatePlaylistMasterFile();
+
+	//Playlist successfully created
+	return true;
+}
 //Player Controls----------------------------------------------------------------------------------
 void MusicController::Play()
 {

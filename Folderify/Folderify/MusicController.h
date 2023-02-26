@@ -98,9 +98,12 @@ public:
 	//Getters
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
 	double GetVolumeLevel();
+	void GetPlaylistNames(std::vector<std::wstring>& playlistSource);
+	void GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<SongSourceObject>& playlistSongSource);
 	
 	//Setters
 	void SetVolumeLevel(double volumeLevel);
+	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath);
 
 	//Player Controls
 	void Play();
