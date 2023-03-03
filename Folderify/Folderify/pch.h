@@ -35,3 +35,10 @@
 
 //For accessing the local folder
 #include <winrt/Windows.Storage.h>
+
+//For getting window handle
+#include <microsoft.ui.xaml.window.h>
+
+//For handling folder picker
+#include <winrt/Windows.Storage.Pickers.h>
+#include <Shobjidl.h>

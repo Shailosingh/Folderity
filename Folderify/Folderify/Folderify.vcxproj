@@ -26,6 +26,9 @@
     <UseWinUI>true</UseWinUI>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -196,6 +199,7 @@
       <DependentUpon>SettingsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="SharedWindowVariables.cpp" />
     <ClCompile Include="SongsPage.xaml.cpp">
       <DependentUpon>SongsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -226,6 +230,7 @@
       <DependentUpon>SettingsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
+    <Midl Include="SongInfo.idl" />
     <Midl Include="SongsPage.idl">
       <DependentUpon>SongsPage.xaml</DependentUpon>
       <SubType>Code</SubType>

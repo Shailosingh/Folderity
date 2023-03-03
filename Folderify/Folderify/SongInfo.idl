@@ -1,0 +1,10 @@
+// SongInfo.idl
+namespace Folderify
+{
+    runtimeclass SongInfo : Windows.UI.Xaml.Data.INotifyPropertyChanged
+    {
+		SongInfo(String songTitle, String playlistTitle);
+        String SongTitle;
+		String PlaylistTitle;
+    }
+}

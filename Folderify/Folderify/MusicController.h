@@ -6,19 +6,14 @@
 #include "MainWindow.xaml.h"
 
 //This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
-#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h"
+//#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Desktop 
+#include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Laptop
 
 typedef struct Song
 {
 	std::wstring songNameWithExtension;
 	std::wstring playlistPath;
 } Song;
-
-typedef struct SongSourceObject
-{
-	std::wstring songName;
-	std::wstring playlistName;
-} SongSourceObject;
 
 typedef struct Playlist
 {
@@ -99,7 +94,8 @@ public:
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
 	double GetVolumeLevel();
 	void GetPlaylistNames(std::vector<std::wstring>& playlistSource);
-	void GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<SongSourceObject>& playlistSongSource);
+	void GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<std::wstring>& playlistSongSource);
+	HWND GetWindowHandle();
 	
 	//Setters
 	void SetVolumeLevel(double volumeLevel);

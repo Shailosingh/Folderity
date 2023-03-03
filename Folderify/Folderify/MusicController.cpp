@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "MusicController.h"
-#include <winrt/Windows.Storage.h>
 #include <filesystem>
 #include <fstream>
 #include <chrono>
@@ -841,7 +840,7 @@ void MusicController::GetPlaylistNames(std::vector<std::wstring>& playlistSource
 	}
 }
 
-void MusicController::GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<SongSourceObject>& playlistSongSource)
+void MusicController::GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<std::wstring>& playlistSongSource)
 {
 	//Clear out the input playlistSongSource vector and reserve enough memory for each song
 	playlistSongSource.clear();
@@ -854,11 +853,20 @@ void MusicController::GetPlaylistSongNames(const UINT64 playlistIndex, std::vect
 	}
 }
 
+HWND MusicController::GetWindowHandle()
+{
+	HWND hwnd;
+	winrt::Microsoft::UI::Xaml::Window window = MainWindowPointer->try_as<winrt::Microsoft::UI::Xaml::Window>();
+	window.as<IWindowNative>()->get_WindowHandle(&hwnd);
+	return hwnd;
+}
+
 //Setters------------------------------------------------------------------------------------------
 bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPath)
 {
-	//Ensure playlist folder path is valid
-	if (!fs::exists(newPlaylistFolderPath))
+	//Check if a playlist already exists in this folder by checking if a playlist order file is there
+	fs::path playlistOrderFilePath = fs::path(newPlaylistFolderPath) / PLAYLIST_SONG_ORDER_FILENAME;
+	if (fs::exists(playlistOrderFilePath))
 	{
 		return false;
 	}

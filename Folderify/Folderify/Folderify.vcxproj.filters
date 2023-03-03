@@ -14,11 +14,13 @@
   <ItemGroup>
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
+    <Midl Include="SongInfo.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="MusicController.cpp" />
+    <ClCompile Include="SharedWindowVariables.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
