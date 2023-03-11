@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <queue>
 #include "MainWindow.xaml.h"
+#include "PlaylistSelectionPageViewModel.h"
 
 //This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
 //#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Desktop 
@@ -38,7 +39,7 @@ private:
 	CComPtr<MMFSoundPlayerLib::MMFSoundPlayer> SoundPlayer;
 	winrt::Folderify::implementation::MainWindow* MainWindowPointer;
 	std::vector<Song> PlayerQueue;
-	uint64_t CurrentSongIndex;
+	uint32_t CurrentSongIndex;
 	std::vector<Playlist> AllPlaylists;
 	std::vector<Song> SongHistory;
 
@@ -58,6 +59,7 @@ private:
 	bool LoadHistoryFromHistoryFile();
 	
 	//File IO General helpers
+	bool LoadSongsFromSinglePlaylist(Playlist& newPlaylist);
 	bool UpdatePlaylistMasterFile();
 	bool UpdateQueueFile();
 	bool UpdateHistoryFile();
@@ -66,8 +68,8 @@ private:
 	void LoadPlaylistIntoQueue(const Playlist& playlistObject);
 
 	//Song loaders
-	void LoadSongIntoPlayer(uint64_t index);
-	bool LoadSongIntoPlayer_Aux(uint64_t index);
+	void LoadSongIntoPlayer(uint32_t index);
+	bool LoadSongIntoPlayer_Aux(uint32_t index);
 
 	//Dispatcher functions
 	void DispatchSongTitle(std::wstring title);
@@ -93,13 +95,13 @@ public:
 	//Getters
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
 	double GetVolumeLevel();
-	void GetPlaylistNames(std::vector<std::wstring>& playlistSource);
-	void GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<std::wstring>& playlistSongSource);
+	void GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	void GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	HWND GetWindowHandle();
 	
 	//Setters
 	void SetVolumeLevel(double volumeLevel);
-	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath);
+	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 
 	//Player Controls
 	void Play();

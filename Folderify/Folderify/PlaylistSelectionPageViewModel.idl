@@ -1,0 +1,13 @@
+// PlaylistSelectionPageViewModel.idl
+import "PlaylistInfo.idl";
+import "SongInfo.idl";
+
+namespace Folderify
+{
+    runtimeclass PlaylistSelectionPageViewModel
+    {
+        PlaylistSelectionPageViewModel();
+        Windows.Foundation.Collections.IObservableVector<PlaylistInfo> Playlists{ get; };
+        Windows.Foundation.Collections.IObservableVector<SongInfo> Songs{ get; };
+    }
+}

@@ -23,12 +23,22 @@
             </Grid.RowDefinitions>
 
             <ListView x:Name="AllPlaylistsListView"
+                      ItemsSource="{x:Bind MainViewModel.Playlists, Mode=OneWay}"
                       Grid.Row="0"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       SelectionMode="Single" 
-                      Background="DarkRed"
-                      Margin="0,0,0,5"/>
+                      Margin="0,0,0,5"
+                      SelectionChanged="AllPlaylistsListView_SelectionChanged">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:PlaylistInfo">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <TextBlock Text="{x:Bind PlaylistTitle, Mode=OneWay}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{x:Bind NumberOfSongs, Mode=OneWay}" FontWeight="Thin" Foreground="LightGray" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListView>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <AppBarButton x:Name="AddPlaylistButton" Tapped="AddPlaylistButton_Tapped" ToolTipService.ToolTip="Add Playlist" Icon="Add"/>
@@ -38,14 +48,21 @@
         </Grid>
 
         <Grid Grid.Column="1" Margin="5,5,5,5">
-            <ListView x:Name="PlaylistItemsListView" 
+            <ListView x:Name="PlaylistItemsListView"
+                      ItemsSource="{x:Bind MainViewModel.Songs, Mode=OneWay}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       SelectionMode="Single" 
                       CanReorderItems="True" 
                       CanDragItems="True" 
                       AllowDrop="True"
-                      Background="DarkBlue"/>
+                      Background="DarkBlue">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:SongInfo">
+                        <TextBlock Text="{x:Bind SongTitle, Mode=OneWay}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListView>
         </Grid>
     </Grid>
 </Page>

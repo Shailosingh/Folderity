@@ -15,17 +15,25 @@
     <Midl Include="App.idl" />
     <Midl Include="MainWindow.idl" />
     <Midl Include="SongInfo.idl" />
+    <Midl Include="PlaylistInfo.idl" />
+    <Midl Include="PlaylistSelectionPageViewModel.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="MusicController.cpp" />
     <ClCompile Include="SharedWindowVariables.cpp" />
+    <ClCompile Include="SongInfo.cpp" />
+    <ClCompile Include="PlaylistInfo.cpp" />
+    <ClCompile Include="PlaylistSelectionPageViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="MusicController.h" />
     <ClInclude Include="SharedWindowVariables.h" />
+    <ClInclude Include="SongInfo.h" />
+    <ClInclude Include="PlaylistInfo.h" />
+    <ClInclude Include="PlaylistSelectionPageViewModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
@@ -42,14 +50,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="Logo.png">
       <Filter>Assets</Filter>
     </Image>
     <Image Include="Icon.ico">
       <Filter>Assets</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

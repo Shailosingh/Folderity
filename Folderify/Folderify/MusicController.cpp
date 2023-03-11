@@ -5,6 +5,7 @@
 #include <chrono>
 #include <format>
 #include <thread>
+#include <cassert>
 
 using namespace MMFSoundPlayerLib;
 using namespace winrt::Windows::Storage;
@@ -206,15 +207,15 @@ bool MusicController::LoadAllPlaylistsFromMasterFile()
 	}
 
 	//Read the number of playlists from the file
-	uint64_t numPlaylists = 0;
-	inputReader.read(reinterpret_cast<char*>(&numPlaylists), sizeof(uint64_t));
+	uint32_t numPlaylists = 0;
+	inputReader.read(reinterpret_cast<char*>(&numPlaylists), sizeof(uint32_t));
 
 	//Reserve the number of playlists in the vector, plus 10 more for efficiency (almost impossible to have more than 2^64 -1 playlists)
 	AllPlaylists.reserve(numPlaylists+10);
 
 	//Read the playlist paths from the file. If the playlist no longer exists, skip it and signal master file for updating
 	bool masterFileNeedsUpdating = false;
-	for (uint64_t index = 0; index < numPlaylists; index++)
+	for (uint32_t index = 0; index < numPlaylists; index++)
 	{
 		//Read the length of the playlist path (including +1 for null) as a uint_32_t
 		uint32_t playlistPathLength = 0;
@@ -262,43 +263,10 @@ bool MusicController::LoadAllSongsFromPlaylistFiles()
 	//Iterate through every playlist and load the songs from the playlist files
 	for (Playlist& playlist : AllPlaylists)
 	{
-		//Get the playlist file path
-		fs::path playlistFile = fs::path(playlist.playlistPath) / PLAYLIST_SONG_ORDER_FILENAME;
-
-		//Open the playlist file
-		std::ifstream inputReader;
-		inputReader.open(playlistFile, std::ios::binary);
-		inputReader >> std::noskipws;
-		if (!inputReader)
+		if (!LoadSongsFromSinglePlaylist(playlist))
 		{
 			return false;
 		}
-
-		//Read the number of songs from the file
-		uint64_t numSongs = 0;
-		inputReader.read(reinterpret_cast<char*>(&numSongs), sizeof(uint64_t));
-
-		//Reserve the number of songs (with 10 extra spaces for more songs)
-		playlist.songNamesWithExtension.reserve(numSongs+10);
-
-		//Read the song paths from the file and add their names to the song list of each playlist
-		for (uint64_t index = 0; index < numSongs; index++)
-		{
-			//Read the length of the song path (including +1 for null) as a uint_32_t
-			uint32_t songPathLength = 0;
-			inputReader.read(reinterpret_cast<char*>(&songPathLength), sizeof(uint32_t));
-
-			//Read the song name (with extension)
-			std::wstring songName;
-			songName.resize(songPathLength);
-			inputReader.read(reinterpret_cast<char*>(songName.data()), songPathLength * sizeof(wchar_t));
-
-			//Add the song name to the playlist's song list
-			playlist.songNamesWithExtension.push_back(songName);
-		}
-
-		//Close up the reader
-		inputReader.close();
 	}
 
 	return true;
@@ -327,18 +295,18 @@ bool MusicController::LoadQueueSongsFromQueueFile()
 	}
 
 	//Read the index of the current song in the queue
-	inputReader.read(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(uint64_t));
+	inputReader.read(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(uint32_t));
 
 	//Read the number of songs from the file
-	uint64_t numSongs = 0;
-	inputReader.read(reinterpret_cast<char*>(&numSongs), sizeof(uint64_t));
+	uint32_t numSongs = 0;
+	inputReader.read(reinterpret_cast<char*>(&numSongs), sizeof(uint32_t));
 	
 	//Reserve the queue vector for the number of songs (plus 10 for efficiency)
 	PlayerQueue.reserve(numSongs + 10);
 
 	//Read the song paths from the file and add their names to PlayerQueue
 	bool queueFileNeedsUpdating = false;
-	for (uint64_t index = 0; index < numSongs; index++)
+	for (uint32_t index = 0; index < numSongs; index++)
 	{
 		//Read the length of the song path (including +1 for null) as a uint_32_t
 		uint32_t songPathLength = 0;
@@ -404,14 +372,14 @@ bool MusicController::LoadHistoryFromHistoryFile()
 	}
 
 	//Read the number of songs from the file
-	uint64_t numSongs = 0;
-	inputReader.read(reinterpret_cast<char*>(&numSongs), sizeof(uint64_t));
+	uint32_t numSongs = 0;
+	inputReader.read(reinterpret_cast<char*>(&numSongs), sizeof(uint32_t));
 
 	//Reserve the history vector for the number of songs (plus 10 for efficiency)
 	SongHistory.reserve(numSongs + 10);
 
 	//Read the song paths from the file and add their names to History
-	for (uint64_t index = 0; index < numSongs; index++)
+	for (uint32_t index = 0; index < numSongs; index++)
 	{
 		//Read the length of the song path (including +1 for null) as a uint_32_t
 		uint32_t songPathLength = 0;
@@ -437,6 +405,58 @@ bool MusicController::LoadHistoryFromHistoryFile()
 
 //File IO General helpers--------------------------------------------------------------------------
 /// <summary>
+/// Takes a new playlist object with only the path and no songs in it yet and fills it with the songs
+/// at that path. NOTE: It must have a playlist file in its path already
+/// </summary>
+/// <param name="newPlaylist">New playlist object with NO SONGS but, already has a Playlist file</param>
+/// <returns>Whether or not the playlist was populated</returns>
+bool MusicController::LoadSongsFromSinglePlaylist(Playlist& newPlaylist)
+{
+	//Get the playlist file path and ensure it exists
+	fs::path playlistFile = fs::path(newPlaylist.playlistPath) / PLAYLIST_SONG_ORDER_FILENAME;
+	if (!fs::exists(playlistFile))
+	{
+		return false;
+	}
+
+	//Open the playlist file
+	std::ifstream inputReader;
+	inputReader.open(playlistFile, std::ios::binary);
+	inputReader >> std::noskipws;
+	if (!inputReader)
+	{
+		return false;
+	}
+
+	//Read the number of songs from the file
+	uint32_t numSongs = 0;
+	inputReader.read(reinterpret_cast<char*>(&numSongs), sizeof(uint32_t));
+
+	//Reserve the number of songs (with 10 extra spaces for more songs)
+	newPlaylist.songNamesWithExtension.reserve(numSongs + 10);
+
+	//Read the song paths from the file and add their names to the song list of each playlist
+	for (uint32_t index = 0; index < numSongs; index++)
+	{
+		//Read the length of the song path (including +1 for null) as a uint_32_t
+		uint32_t songPathLength = 0;
+		inputReader.read(reinterpret_cast<char*>(&songPathLength), sizeof(uint32_t));
+
+		//Read the song name (with extension)
+		std::wstring songName;
+		songName.resize(songPathLength);
+		inputReader.read(reinterpret_cast<char*>(songName.data()), songPathLength * sizeof(wchar_t));
+
+		//Add the song name to the playlist's song list
+		newPlaylist.songNamesWithExtension.push_back(songName);
+	}
+
+	//Close up the reader
+	inputReader.close();
+	return true;
+}
+
+/// <summary>
 /// Takes the current list of playlists and writes them to the master file. Does not check whether
 /// the current list of playlists is still up to date. That must be done elsewhere.
 /// </summary>
@@ -458,14 +478,14 @@ bool MusicController::UpdatePlaylistMasterFile()
 	}
 
 	//Write the number of playlists to the file
-	uint64_t numPlaylists = AllPlaylists.size();
-	outputWriter.write(reinterpret_cast<char*>(&numPlaylists), sizeof(uint64_t));
+	uint32_t numPlaylists = AllPlaylists.size();
+	outputWriter.write(reinterpret_cast<char*>(&numPlaylists), sizeof(uint32_t));
 
 	//Write the playlist paths to the file
 	for (const Playlist& playlist : AllPlaylists)
 	{
-		//Write the length of the playlist path (including +1 for null) as a uint_32_t
-		uint32_t playlistPathLength = playlist.playlistPath.length() + 1;
+		//Write the length of the playlist path as a uint_32_t
+		uint32_t playlistPathLength = playlist.playlistPath.length();
 		outputWriter.write(reinterpret_cast<char*>(&playlistPathLength), sizeof(uint32_t));
 
 		//Write the playlist path
@@ -500,11 +520,11 @@ bool MusicController::UpdateQueueFile()
 	}
 	
 	//Write the index of the current song in the queue
-	outputWriter.write(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(uint64_t));
+	outputWriter.write(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(uint32_t));
 
 	//Write the number of songs to the file
-	uint64_t numSongs = PlayerQueue.size();
-	outputWriter.write(reinterpret_cast<char*>(&numSongs), sizeof(uint64_t));
+	uint32_t numSongs = PlayerQueue.size();
+	outputWriter.write(reinterpret_cast<char*>(&numSongs), sizeof(uint32_t));
 	
 	//Write the song paths to the file
 	for (const Song& song : PlayerQueue)
@@ -513,7 +533,7 @@ bool MusicController::UpdateQueueFile()
 		fs::path songPath = fs::path(song.playlistPath) / song.songNameWithExtension;
 
 		//Write the length of the song path (including +1 for null) as a uint_32_t
-		uint32_t songPathLength = songPath.wstring().length() + 1;
+		uint32_t songPathLength = songPath.wstring().length();
 		outputWriter.write(reinterpret_cast<char*>(&songPathLength), sizeof(uint32_t));
 
 		//Write the song path
@@ -543,8 +563,8 @@ bool MusicController::UpdateHistoryFile()
 	}
 
 	//Write the number of songs to the file
-	uint64_t numSongs = SongHistory.size();
-	outputWriter.write(reinterpret_cast<char*>(&numSongs), sizeof(uint64_t));
+	uint32_t numSongs = SongHistory.size();
+	outputWriter.write(reinterpret_cast<char*>(&numSongs), sizeof(uint32_t));
 
 	//Write the song paths to the file
 	for (const Song& song : SongHistory)
@@ -553,7 +573,7 @@ bool MusicController::UpdateHistoryFile()
 		fs::path songPath = fs::path(song.playlistPath) / song.songNameWithExtension;
 
 		//Write the length of the song path (including +1 for null) as a uint_32_t
-		uint32_t songPathLength = songPath.wstring().length() + 1;
+		uint32_t songPathLength = songPath.wstring().length();
 		outputWriter.write(reinterpret_cast<char*>(&songPathLength), sizeof(uint32_t));
 
 		//Write the song path
@@ -653,21 +673,21 @@ bool MusicController::UpdatePlaylistOrderFile(const Playlist& playlistObject)
 {
 	//Open the playlist file
 	std::ofstream outputWriter;
-	outputWriter.open(playlistObject.playlistPath, std::ios::binary);
+	outputWriter.open(fs::path(playlistObject.playlistPath) / PLAYLIST_SONG_ORDER_FILENAME, std::ios::binary);
 	if (!outputWriter)
 	{
 		return false;
 	}
 
 	//Write the number of songs to the file
-	uint64_t numSongs = playlistObject.songNamesWithExtension.size();
-	outputWriter.write(reinterpret_cast<char*>(&numSongs), sizeof(uint64_t));
+	uint32_t numSongs = playlistObject.songNamesWithExtension.size();
+	outputWriter.write(reinterpret_cast<char*>(&numSongs), sizeof(uint32_t));
 
 	//Write the song paths to the file
 	for (const std::wstring& songName : playlistObject.songNamesWithExtension)
 	{
-		//Write the length of the song path (including +1 for null) as a uint_32_t
-		uint32_t songPathLength = songName.length() + 1;
+		//Write the length of the song path as a uint_32_t
+		uint32_t songPathLength = songName.length();
 		outputWriter.write(reinterpret_cast<char*>(&songPathLength), sizeof(uint32_t));
 
 		//Write the song path
@@ -716,7 +736,7 @@ void MusicController::LoadPlaylistIntoQueue(const Playlist& playlistObject)
 /// will be empty. The CurrentIndex will be set to the index of the song currently playing or 0 if it is empty.
 /// </summary>
 /// <param name="index">The index of the song playing</param>
-void MusicController::LoadSongIntoPlayer(uint64_t index)
+void MusicController::LoadSongIntoPlayer(uint32_t index)
 {
 	//Ensure only one thread is changing around the queue and starting songs at once
 	WaitForSingleObject(QueueMutex, INFINITE);
@@ -766,7 +786,7 @@ void MusicController::LoadSongIntoPlayer(uint64_t index)
 /// </summary>
 /// <param name="index">Index of song in queue</param>
 /// <returns>Whether song is loaded or not</returns>
-bool MusicController::LoadSongIntoPlayer_Aux(uint64_t index)
+bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 {
 	//First ensure the index is a valid index
 	if (!(index < PlayerQueue.size()))
@@ -815,7 +835,7 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint64_t index)
 //General Helpers----------------------------------------------------------------------------------
 std::wstring MusicController::Convert100NanoSecondsToTimestamp(UINT64 input100NanoSeconds)
 {
-	UINT64 seconds = SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits() / OneSecond_100NanoSecondUnits;
+	UINT64 seconds = input100NanoSeconds / OneSecond_100NanoSecondUnits;
 	UINT64 minutes = seconds / 60;
 	seconds = seconds % 60;
 	return std::format(L"{:02}:{:02}", minutes, seconds);
@@ -827,29 +847,58 @@ PlayerState MusicController::GetPlayerState()
 	return SoundPlayer->GetPlayerState();
 }
 
-void MusicController::GetPlaylistNames(std::vector<std::wstring>& playlistSource)
+//NOTE: Only done during initialization of PlaylistSelectionPage
+void MusicController::GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
-	//Clear out the input playlistSource vector and reserve enough memory for each playlist
-	playlistSource.clear();
-	playlistSource.reserve(AllPlaylists.size());
+	//Clear out the input vector
+	playlistPageModel.Playlists().Clear();
 
-	//Add all playlist names in order
-	for (const Playlist& playlist : AllPlaylists)
+	//Fill in all playlists
+	for (uint32_t index = 0; index < AllPlaylists.size(); index++)
 	{
-		playlistSource.emplace_back(fs::path(playlist.playlistPath).filename());
+		playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(fs::path(AllPlaylists[index].playlistPath).stem().c_str(), std::to_wstring(AllPlaylists[index].songNamesWithExtension.size())));
 	}
 }
 
-void MusicController::GetPlaylistSongNames(const UINT64 playlistIndex, std::vector<std::wstring>& playlistSongSource)
+void MusicController::GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
-	//Clear out the input playlistSongSource vector and reserve enough memory for each song
-	playlistSongSource.clear();
-	playlistSongSource.reserve(AllPlaylists[playlistIndex].songNamesWithExtension.size());
+	//Ensure that the playlist index is valid
+	assert(playlistIndex < AllPlaylists.size());
 
-	//Add all song names in order
-	for (const std::wstring& songName : AllPlaylists[playlistIndex].songNamesWithExtension)
+	//Check if the number of songs in input is too small or equal to the real amount
+	if (playlistPageModel.Songs().Size() <= AllPlaylists[playlistIndex].songNamesWithExtension.size())
 	{
-		playlistSongSource.emplace_back(fs::path(songName).stem());
+		//If too small, update all songs that will fit
+		for (uint32_t index = 0; index < playlistPageModel.Songs().Size(); index++)
+		{
+			playlistPageModel.Songs().GetAt(index).SongTitle(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str());
+			playlistPageModel.Songs().GetAt(index).PlaylistTitle(fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str());
+			
+			//playlistPageModel.Songs().SetAt(index, winrt::Folderify::SongInfo(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str(), fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str());
+		}
+		
+		//Append rest of songs if there are any left
+		for (uint32_t index = playlistPageModel.Songs().Size(); index < AllPlaylists[playlistIndex].songNamesWithExtension.size(); index++)
+		{
+			playlistPageModel.Songs().Append(winrt::Folderify::SongInfo(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str(), fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str()));
+		}
+	}
+	
+	//If input list of songs is too big
+	else
+	{
+		//Update input for all songs in this playlist
+		for (uint32_t index = 0; index < AllPlaylists[playlistIndex].songNamesWithExtension.size(); index++)
+		{
+			playlistPageModel.Songs().GetAt(index).SongTitle(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str());
+			playlistPageModel.Songs().GetAt(index).PlaylistTitle(fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str());
+		}
+
+		//Purge the excess elements
+		while (playlistPageModel.Songs().Size() > AllPlaylists[playlistIndex].songNamesWithExtension.size())
+		{
+			playlistPageModel.Songs().RemoveAtEnd();
+		}
 	}
 }
 
@@ -862,13 +911,44 @@ HWND MusicController::GetWindowHandle()
 }
 
 //Setters------------------------------------------------------------------------------------------
-bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPath)
+bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Check if a playlist already exists in this folder by checking if a playlist order file is there
 	fs::path playlistOrderFilePath = fs::path(newPlaylistFolderPath) / PLAYLIST_SONG_ORDER_FILENAME;
 	if (fs::exists(playlistOrderFilePath))
 	{
-		return false;
+		//If the file exists, check if the playlist is already in the list. If it is, take no action
+		for (uint32_t index = 0; index < AllPlaylists.size(); index++)
+		{
+			if (AllPlaylists[index].playlistPath == newPlaylistFolderPath)
+			{
+				return false;
+			}
+		}
+
+		//If the playlist isn't in the list, it must be created 
+		Playlist newPlaylist{ newPlaylistFolderPath, std::vector<std::wstring>() };
+		
+		//Load in the songs in the playlist
+		if (LoadSongsFromSinglePlaylist(newPlaylist))
+		{
+			//Add the new playlist to the list of playlists
+			AllPlaylists.push_back(newPlaylist);
+			
+			//Update the master playlist file
+			UpdatePlaylistMasterFile();
+			
+			//If the songs were loaded, add the playlist to the list
+			playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(fs::path(newPlaylistFolderPath).stem().c_str(), std::to_wstring(AllPlaylists[AllPlaylists.size() - 1].songNamesWithExtension.size())));
+			
+			return true;
+		}
+
+		else
+		{
+			//If the playlist cannot be loaded, delete the existing playlist file and start from scratch
+			fs::remove(playlistOrderFilePath);
+		}
 	}
 	
 	//Create the new playlist object
@@ -895,11 +975,14 @@ bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPat
 	AllPlaylists.push_back(newPlaylist);
 
 	//Create the playlist order file for the playlist
-	UpdatePlaylistOrderFile(AllPlaylists[AllPlaylists.size() - 1]);
+	UpdatePlaylistOrderFile(newPlaylist);
 
 	//Update the master playlist file
 	UpdatePlaylistMasterFile();
-
+	
+	//Update UI
+	playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(fs::path(newPlaylistFolderPath).stem().c_str(), std::to_wstring(newPlaylist.songNamesWithExtension.size())));
+	
 	//Playlist successfully created
 	return true;
 }

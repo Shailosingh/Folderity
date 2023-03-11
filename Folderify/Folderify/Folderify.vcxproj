@@ -92,6 +92,9 @@
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">false</MultiProcessorCompilation>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MultiProcessorCompilation>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Mfuuid.lib;Mfplat.lib;Mf.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -109,6 +112,9 @@
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</MultiProcessorCompilation>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</MultiProcessorCompilation>
+      <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -134,10 +140,12 @@
     <ClInclude Include="MainWindow.xaml.h">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="PlaylistInfo.h" />
     <ClInclude Include="PlaylistSelectionPage.xaml.h">
       <DependentUpon>PlaylistSelectionPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="PlaylistSelectionPageViewModel.h" />
     <ClInclude Include="QueuePage.xaml.h">
       <DependentUpon>QueuePage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -147,6 +155,7 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="SharedWindowVariables.h" />
+    <ClInclude Include="SongInfo.h" />
     <ClInclude Include="SongsPage.xaml.h">
       <DependentUpon>SongsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -187,10 +196,12 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="PlaylistInfo.cpp" />
     <ClCompile Include="PlaylistSelectionPage.xaml.cpp">
       <DependentUpon>PlaylistSelectionPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="PlaylistSelectionPageViewModel.cpp" />
     <ClCompile Include="QueuePage.xaml.cpp">
       <DependentUpon>QueuePage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -200,6 +211,7 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="SharedWindowVariables.cpp" />
+    <ClCompile Include="SongInfo.cpp" />
     <ClCompile Include="SongsPage.xaml.cpp">
       <DependentUpon>SongsPage.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -218,10 +230,12 @@
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
+    <Midl Include="PlaylistInfo.idl" />
     <Midl Include="PlaylistSelectionPage.idl">
       <DependentUpon>PlaylistSelectionPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
+    <Midl Include="PlaylistSelectionPageViewModel.idl" />
     <Midl Include="QueuePage.idl">
       <DependentUpon>QueuePage.xaml</DependentUpon>
       <SubType>Code</SubType>

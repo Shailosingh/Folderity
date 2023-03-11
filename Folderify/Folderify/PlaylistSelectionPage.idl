@@ -1,12 +1,11 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
+// PlaylistSelectionPage.idl
+import "PlaylistSelectionPageViewModel.idl";
 
 namespace Folderify
 {
-    [default_interface]
     runtimeclass PlaylistSelectionPage : Microsoft.UI.Xaml.Controls.Page
     {
         PlaylistSelectionPage();
-        Int32 MyProperty;
+	    PlaylistSelectionPageViewModel MainViewModel{ get; };
     }
 }
