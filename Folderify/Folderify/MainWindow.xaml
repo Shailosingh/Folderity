@@ -76,10 +76,12 @@
                     <TextBlock x:Name="CurrentTimestampBlock" Grid.Column="0" Text="0:00" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
                     <Slider x:Name="TrackBar" 
                             Grid.Column="1" 
-                            PointerPressed="TrackBar_PointerPressed"
-                            PointerReleased="TrackBar_PointerReleased"
-                            PointerCanceled="TrackBar_PointerCanceled"
-                            PointerCaptureLost="TrackBar_PointerCanceled"
+                            Minimum="0"
+                            Maximum="1000"
+                            ManipulationMode="TranslateRailsX"
+                            ManipulationStarting="TrackBar_ManipulationStarting"
+                            ManipulationStarted="TrackBar_ManipulationStarted"
+                            ManipulationCompleted="TrackBar_ManipulationCompleted"
                             IsEnabled="False" 
                             HorizontalAlignment="Stretch" 
                             VerticalAlignment="Top" 
@@ -99,7 +101,7 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton x:Name="RepeatButton" ToolTipService.ToolTip="Repeat Off" Icon="RepeatAll" Tapped="RepeatButton_Tapped"/>
+                <AppBarButton x:Name="LoopButton" ToolTipService.ToolTip="Loop Disabled" Icon="RepeatAll" Tapped="LoopButton_Tapped"/>
                 <AppBarButton x:Name="ShuffleButton" ToolTipService.ToolTip="Shuffle" Icon="Shuffle" Tapped="ShuffleButton_Tapped"/>
             </StackPanel>
         </Grid>

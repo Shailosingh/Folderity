@@ -42,13 +42,14 @@ private:
 	uint32_t CurrentSongIndex;
 	std::vector<Playlist> AllPlaylists;
 	std::vector<Song> SongHistory;
+	bool IsLoopEnabled;
+	double TrackbarRange;
 
 	//String helpers
 	std::wstring Convert100NanoSecondsToTimestamp(UINT64 input100NanoSeconds);
 
 	//Event fields and functions
 	void EventThread();
-	double NewSongPosition;
 	bool EventLoopRunning;
 	bool ProgramRunning;
 	
@@ -79,6 +80,7 @@ private:
 	void DispatchNextButtonToggle(bool isEnabled);
 	void DispatchPlayButtonToggle(bool isEnabled);
 	void DispatchPlayButtonIcon(bool isPlayIcon);
+	void DispatchLoopButtonIcon();
 	void DispatchTrackBarToggle(bool isEnabled);
 	
 public:
@@ -96,21 +98,24 @@ public:
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
 	double GetVolumeLevel();
 	void GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
-	void GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	void GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	bool RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	HWND GetWindowHandle();
 	
 	//Setters
 	void SetVolumeLevel(double volumeLevel);
 	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
-
+	void UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	void AddPlaylistToQueue(int32_t playlistIndex, int32_t startingSongIndex);
+	
 	//Player Controls
 	void Play();
 	void Pause();
 	void Previous();
 	void Next();
-	void Seek(double percent);
+	void Seek(double trackBarValue);
+	void LoopToggle();
 	void Shuffle();
-	void RepeatToggle();
 	
 	//Destructors and Constructors
 	MusicController(winrt::Folderify::implementation::MainWindow* mainWindow);

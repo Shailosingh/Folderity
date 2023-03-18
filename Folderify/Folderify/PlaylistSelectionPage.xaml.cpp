@@ -25,6 +25,16 @@ namespace winrt::Folderify::implementation
 
         //Get all playlist info
 		ControllerObject->GetPlaylistNames(m_mainViewModel);
+
+        //Update number of playlists TextBlock
+		if (m_mainViewModel.Playlists().Size() == 1)
+		{
+			NumberOfPlaylistsTextBlock().Text(L"1 Playlist");
+		}
+		else
+		{
+			NumberOfPlaylistsTextBlock().Text(std::to_wstring(m_mainViewModel.Playlists().Size()) + L" Playlists");
+		}
     }
 
     winrt::Folderify::PlaylistSelectionPageViewModel PlaylistSelectionPage::MainViewModel()
@@ -78,24 +88,59 @@ namespace winrt::Folderify::implementation
             co_return;
         }
 
-        //Load the song list
-        ControllerObject->GetPlaylistSongNames(m_mainViewModel.Playlists().Size() - 1, m_mainViewModel);
+        //Load the song list by selecting the recently made playlist in the AllPlaylistsListView
+		AllPlaylistsListView().SelectedIndex(m_mainViewModel.Playlists().Size() - 1);
+
+        //Update number of playlists TextBlock
+        if (m_mainViewModel.Playlists().Size() == 1)
+        {
+            NumberOfPlaylistsTextBlock().Text(L"1 Playlist");
+        }
+        else
+        {
+            NumberOfPlaylistsTextBlock().Text(std::to_wstring(m_mainViewModel.Playlists().Size()) + L" Playlists");
+        }
     }
 
     void PlaylistSelectionPage::AllPlaylistsListView_SelectionChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const& e)
     {
         //Load the song list
         ControllerObject->GetPlaylistSongNames(AllPlaylistsListView().SelectedIndex(), m_mainViewModel);
+        
+        //Enable the refresh button
+		RefreshButton().IsEnabled(true);
+    }
+    
+    void PlaylistSelectionPage::PlaylistItemsListView_SelectionChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const& e)
+    {
+        //Load the selected song and its playlist in the queue
+        ControllerObject->AddPlaylistToQueue(AllPlaylistsListView().SelectedIndex(), PlaylistItemsListView().SelectedIndex());
     }
 
+    void PlaylistSelectionPage::PlaylistItemsListView_DragItemsStarting(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::DragItemsStartingEventArgs const& e)
+    {
+		//Not too sure what to do with this event but, it seems it will be useful in the future
+    }
+
+
+    void PlaylistSelectionPage::PlaylistItemsListView_DragItemsCompleted(winrt::Microsoft::UI::Xaml::Controls::ListViewBase const& sender, winrt::Microsoft::UI::Xaml::Controls::DragItemsCompletedEventArgs const& args)
+    {
+		ControllerObject->UpdatePlaylist(AllPlaylistsListView().SelectedIndex(), m_mainViewModel);
+    }
+    
     void PlaylistSelectionPage::RefreshButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
     {
-		//IT'S ALL COMING UP MILHOUSE (This was a test to see if I reordered the ListView, if it would reorder the underlying data)
-		for (uint32_t index = 0; index < m_mainViewModel.Songs().Size(); index++)
-		{
-			hstring songName = m_mainViewModel.Songs().GetAt(index).SongTitle();
-		}
-
-        //Next check out what happens when  there appears to be two selected songs when that shouldn't be possible
+		int32_t selectedIndex = AllPlaylistsListView().SelectedIndex();
+		bool isRefreshed = ControllerObject->RefreshPlaylistSongNames(selectedIndex, m_mainViewModel);
+        if (isRefreshed)
+        {
+            //If refresh succeeded reselect the playlist
+			AllPlaylistsListView().SelectedIndex(selectedIndex);
+        }
+        else
+        {
+			//If refresh failed, the playlist will be deselected so, disable the refresh button
+            RefreshButton().IsEnabled(false);
+        }
     }
 }

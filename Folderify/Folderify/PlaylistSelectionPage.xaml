@@ -42,7 +42,7 @@
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <AppBarButton x:Name="AddPlaylistButton" Tapped="AddPlaylistButton_Tapped" ToolTipService.ToolTip="Add Playlist" Icon="Add"/>
-                <AppBarButton x:Name="RefreshButton" Tapped="RefreshButton_Tapped" ToolTipService.ToolTip="Refresh All Playlists" Icon="Refresh"/>
+                <AppBarButton x:Name="RefreshButton" IsEnabled="False" Tapped="RefreshButton_Tapped" ToolTipService.ToolTip="Refresh All Playlists" Icon="Refresh"/>
                 <TextBlock x:Name="NumberOfPlaylistsTextBlock" Text="0 playlists" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
@@ -56,7 +56,10 @@
                       CanReorderItems="True" 
                       CanDragItems="True" 
                       AllowDrop="True"
-                      Background="DarkBlue">
+                      Background="DarkSlateGray"
+                      SelectionChanged="PlaylistItemsListView_SelectionChanged"
+                      DragItemsStarting="PlaylistItemsListView_DragItemsStarting"
+                      DragItemsCompleted="PlaylistItemsListView_DragItemsCompleted">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="local:SongInfo">
                         <TextBlock Text="{x:Bind SongTitle, Mode=OneWay}"/>

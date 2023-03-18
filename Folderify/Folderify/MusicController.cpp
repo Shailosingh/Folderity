@@ -17,10 +17,11 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	//Initialize variables
 	CurrentSongIndex = 0;
 	MainWindowPointer = mainWindow;
-	NewSongPosition = 0;
+	IsLoopEnabled = false;
 	ProgramRunning = true;
 	EventLoopRunning = false;
 	SongPositionBarHeld = false;
+	TrackbarRange = MainWindowPointer->TrackBar().Maximum() - MainWindowPointer->TrackBar().Minimum();
 
 	//Initialize events
 	SongChangedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -130,12 +131,15 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 
 void MusicController::CloseController()
 {
-	//Close the music player
-	SoundPlayer->Shutdown();
+	//Stop any songs playing
+	SoundPlayer->Stop();
 	
 	//Close event loop
 	ProgramRunning = false;
 	while (EventLoopRunning);
+	
+	//Close the music player
+	SoundPlayer->Shutdown();
 	
 	//Save up the queue file
 	UpdateQueueFile();
@@ -171,7 +175,14 @@ void MusicController::EventThread()
 		//Load next song in the queue if and only if the old song ended
 		if (GetPlayerState() == PlayerState::PresentationEnd)
 		{
-			LoadSongIntoPlayer(CurrentSongIndex + 1);
+			if (IsLoopEnabled)
+			{
+				LoadSongIntoPlayer(CurrentSongIndex);
+			}
+			else
+			{
+				LoadSongIntoPlayer(CurrentSongIndex + 1);
+			}
 		}
 
 		//Sleep for 100 ms so CPU doesn't freak out
@@ -804,8 +815,8 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 	//Disable all the buttons and set image to default while song is being found
 	DispatchPreviousButtonToggle(false);
 	DispatchPlayButtonToggle(false);
-	DispatchPlayButtonIcon(false);
 	DispatchNextButtonToggle(false);
+	DispatchTrackBarToggle(false);
 	DispatchSongTitle(L"Waiting For Song...");
 	DispatchPlaylistTitle(L"Waiting For Playlist...");
 	//TODO: Set image to default
@@ -823,8 +834,9 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 	//Change the state of the buttons, song name, playlist name and image
 	DispatchPreviousButtonToggle(index != 0);
 	DispatchPlayButtonToggle(true);
-	DispatchPlayButtonIcon(true);
+	DispatchPlayButtonIcon(false);
 	DispatchNextButtonToggle(index != (PlayerQueue.size() - 1));
+	DispatchTrackBarToggle(true);
 	DispatchSongTitle(fs::path(PlayerQueue[index].songNameWithExtension).stem());
 	DispatchPlaylistTitle(fs::path(PlayerQueue[index].playlistPath).filename());
 	//TODO: Set image to song's filename with either png, jpeg jpg extension
@@ -860,10 +872,14 @@ void MusicController::GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageVi
 	}
 }
 
-void MusicController::GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
+void MusicController::GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Ensure that the playlist index is valid
-	assert(playlistIndex < AllPlaylists.size());
+	bool isPlaylistIndexWithinBounds = (playlistIndex >= 0) && (playlistIndex < AllPlaylists.size());
+	if (!isPlaylistIndexWithinBounds)
+	{
+		return;
+	}
 
 	//Check if the number of songs in input is too small or equal to the real amount
 	if (playlistPageModel.Songs().Size() <= AllPlaylists[playlistIndex].songNamesWithExtension.size())
@@ -871,16 +887,13 @@ void MusicController::GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folder
 		//If too small, update all songs that will fit
 		for (uint32_t index = 0; index < playlistPageModel.Songs().Size(); index++)
 		{
-			playlistPageModel.Songs().GetAt(index).SongTitle(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str());
-			playlistPageModel.Songs().GetAt(index).PlaylistTitle(fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str());
-			
-			//playlistPageModel.Songs().SetAt(index, winrt::Folderify::SongInfo(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str(), fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str());
+			playlistPageModel.Songs().SetAt(index, winrt::Folderify::SongInfo((fs::path(AllPlaylists[playlistIndex].playlistPath) / fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index])).c_str()));
 		}
 		
 		//Append rest of songs if there are any left
 		for (uint32_t index = playlistPageModel.Songs().Size(); index < AllPlaylists[playlistIndex].songNamesWithExtension.size(); index++)
 		{
-			playlistPageModel.Songs().Append(winrt::Folderify::SongInfo(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str(), fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str()));
+			playlistPageModel.Songs().Append(winrt::Folderify::SongInfo((fs::path(AllPlaylists[playlistIndex].playlistPath) / fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index])).c_str()));
 		}
 	}
 	
@@ -890,8 +903,7 @@ void MusicController::GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folder
 		//Update input for all songs in this playlist
 		for (uint32_t index = 0; index < AllPlaylists[playlistIndex].songNamesWithExtension.size(); index++)
 		{
-			playlistPageModel.Songs().GetAt(index).SongTitle(fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index]).stem().c_str());
-			playlistPageModel.Songs().GetAt(index).PlaylistTitle(fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str());
+			playlistPageModel.Songs().SetAt(index, winrt::Folderify::SongInfo((fs::path(AllPlaylists[playlistIndex].playlistPath) / fs::path(AllPlaylists[playlistIndex].songNamesWithExtension[index])).c_str()));
 		}
 
 		//Purge the excess elements
@@ -900,6 +912,34 @@ void MusicController::GetPlaylistSongNames(uint32_t playlistIndex, winrt::Folder
 			playlistPageModel.Songs().RemoveAtEnd();
 		}
 	}
+}
+
+bool MusicController::RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
+{
+	//Ensure that the playlist index is valid
+	bool isPlaylistIndexWithinBounds = (playlistIndex >= 0) && (playlistIndex < AllPlaylists.size());
+	if (!isPlaylistIndexWithinBounds)
+	{
+		return false;
+	}
+
+	//Try to update playlist
+	bool isHandled = CheckForAndHandleAddedOrRemovedSongs(AllPlaylists[playlistIndex]);
+	if (!isHandled)
+	{
+		//If the playlist update wasn't handled properly, it means the playlist was deleted or something similar
+		AllPlaylists.erase(AllPlaylists.begin() + playlistIndex);
+		playlistPageModel.Playlists().RemoveAt(playlistIndex);
+		return false;
+	}
+
+	//If the playlist is updated, update the model for the playlist
+	GetPlaylistSongNames(playlistIndex, playlistPageModel);
+
+	//Update the playlist's count in the model
+	playlistPageModel.Playlists().SetAt(playlistIndex, winrt::Folderify::PlaylistInfo(fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str(), std::to_wstring(AllPlaylists[playlistIndex].songNamesWithExtension.size())));
+	
+	return true;
 }
 
 HWND MusicController::GetWindowHandle()
@@ -986,22 +1026,89 @@ bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPat
 	//Playlist successfully created
 	return true;
 }
+
+void MusicController::UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
+{
+	//Ensure that the playlist index is valid
+	bool isPlaylistIndexWithinBounds = (playlistIndex >= 0) && (playlistIndex < AllPlaylists.size());
+	if (!isPlaylistIndexWithinBounds)
+	{
+		return;
+	}
+	
+	//Iterate through every song in the playlist and if the song has changed, update the playlist
+	bool playlistUpdated = false;
+	for (uint32_t index = 0; index < AllPlaylists[playlistIndex].songNamesWithExtension.size(); index++)
+	{
+		//Get the current song
+		std::wstring currentSong = AllPlaylists[playlistIndex].songNamesWithExtension[index];
+
+		//Get the new song
+		std::wstring newSong = fs::path(playlistPageModel.Songs().GetAt(index).SongPath().c_str()).filename();
+
+		//If the song has changed, update the playlist
+		if (currentSong != newSong)
+		{
+			//Update the playlist
+			AllPlaylists[playlistIndex].songNamesWithExtension[index] = newSong;
+
+			//Signal playlist to be updated
+			playlistUpdated = true;
+		}
+	}
+
+	//If the playlist was updated at all, update the playlist order file
+	if (playlistUpdated)
+	{
+		UpdatePlaylistOrderFile(AllPlaylists[playlistIndex]);
+	}
+}
+
+void MusicController::AddPlaylistToQueue(int32_t playlistIndex, int32_t startingSongIndex)
+{
+	//It should be impossible for playlistIndex and startingSongIndex to be out of bounds
+	bool isPlaylistIndexWithinBounds = (playlistIndex >= 0) && (playlistIndex < AllPlaylists.size());
+	bool isSongIndexWithinBounds = (startingSongIndex >= 0) && (startingSongIndex < AllPlaylists[playlistIndex].songNamesWithExtension.size());
+	if (!(isPlaylistIndexWithinBounds && isSongIndexWithinBounds))
+	{
+		return;
+	}
+
+	//Ensure only one thread is changing around the queue and starting songs at once
+	WaitForSingleObject(QueueMutex, INFINITE);
+
+	//Clear the queue
+	PlayerQueue.clear();
+	
+	//Add the songs to the queue
+	for (uint32_t index = 0; index < AllPlaylists[playlistIndex].songNamesWithExtension.size(); index++)
+	{
+		PlayerQueue.push_back({ .songNameWithExtension = AllPlaylists[playlistIndex].songNamesWithExtension[index], .playlistPath = AllPlaylists[playlistIndex].playlistPath });
+	}
+
+	//Release the mutex
+	ReleaseMutex(QueueMutex);
+
+	//Set the starting song
+	LoadSongIntoPlayer(startingSongIndex);
+}
 //Player Controls----------------------------------------------------------------------------------
 void MusicController::Play()
 {
 	HRESULT hr = SoundPlayer->Play();
 	if (SUCCEEDED(hr))
 	{
-		DispatchPlayButtonIcon(true);
+		DispatchPlayButtonIcon(false);
 	}
 }
 
 void MusicController::Pause()
 {
+	//Ensure it is only paused if it is playing
 	HRESULT hr = SoundPlayer->Pause();
 	if (SUCCEEDED(hr))
 	{
-		DispatchPlayButtonIcon(false);
+		DispatchPlayButtonIcon(true);
 	}
 }
 
@@ -1015,9 +1122,35 @@ void MusicController::Next()
 	LoadSongIntoPlayer(CurrentSongIndex + 1);
 }
 
-void MusicController::Seek(double percent)
+void MusicController::Seek(double trackBarValue)
 {
-	SoundPlayer->Seek((percent * SoundPlayer->GetAudioFileDuration_100NanoSecondUnits())/100);
+	//Check if song is paused paused
+	bool isPaused = GetPlayerState() == Paused;
+
+	//Compute the time to pass to the sound player's seek function
+	UINT64 seekPosition_100NanoSeconds = (trackBarValue * SoundPlayer->GetAudioFileDuration_100NanoSecondUnits()) / TrackbarRange;
+	UINT64 timeRemaining_100NanoSeconds = SoundPlayer->GetAudioFileDuration_100NanoSecondUnits() - seekPosition_100NanoSeconds;
+
+	//Seek to the correct time
+	SoundPlayer->Seek(seekPosition_100NanoSeconds);
+
+	//If the song was paused and timestamp was not at the end of the song
+	if (isPaused && timeRemaining_100NanoSeconds > OneSecond_100NanoSecondUnits)
+	{
+		Pause();
+	}
+	
+	else if (isPaused)
+	{
+		DispatchPlayButtonIcon(false);
+	}
+}
+
+void MusicController::LoopToggle()
+{
+	IsLoopEnabled = !IsLoopEnabled;
+	DispatchLoopButtonIcon();
+	
 }
 
 //Dispatcher fuctions------------------------------------------------------------------------------
@@ -1057,11 +1190,11 @@ void MusicController::DispatchCurrentSongPositionAndDuration()
 	std::wstring currentTimestamp = Convert100NanoSecondsToTimestamp(SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits());
 	std::wstring totalTimestamp = Convert100NanoSecondsToTimestamp(SoundPlayer->GetAudioFileDuration_100NanoSecondUnits());
 	
-	//Get percent (0-100) for song position
+	//Get percent for song position
 	double songPositionPercent = 0;
-	if (SoundPlayer->GetAudioFileDuration_100NanoSecondUnits() != 0)
+	if (SoundPlayer->GetAudioFileDuration_100NanoSecondUnits() != 0) //Avoid division by 0
 	{
-		songPositionPercent = (SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits() * 100) / SoundPlayer->GetAudioFileDuration_100NanoSecondUnits();
+		songPositionPercent = (SoundPlayer->GetCurrentPresentationTime_100NanoSecondUnits() * TrackbarRange) / SoundPlayer->GetAudioFileDuration_100NanoSecondUnits();
 	}
 	
 	if (MainWindowPointer->DispatcherQueue().HasThreadAccess())
@@ -1133,11 +1266,14 @@ void MusicController::DispatchPlayButtonIcon(bool isPlayIcon)
 		if (isPlayIcon)
 		{
 			MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Play));
+			winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->PlayPauseButton(), winrt::box_value(L"Play"));
 		}
 		
 		else
 		{
 			MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Pause));
+			winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->PlayPauseButton(), winrt::box_value(L"Pause"));
+
 		}
 	}
 	else
@@ -1147,11 +1283,50 @@ void MusicController::DispatchPlayButtonIcon(bool isPlayIcon)
 				if (isPlayIcon)
 				{
 					MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Play));
+					winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->PlayPauseButton(), winrt::box_value(L"Play"));
 				}
 
 				else
 				{
 					MainWindowPointer->PlayPauseButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::Pause));
+					winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->PlayPauseButton(), winrt::box_value(L"Pause"));
+				}
+			});
+	}
+}
+
+void MusicController::DispatchLoopButtonIcon()
+{
+	if (MainWindowPointer->DispatcherQueue().HasThreadAccess())
+	{
+		if (IsLoopEnabled)
+		{
+			MainWindowPointer->LoopButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::RepeatOne));
+			winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->LoopButton(), winrt::box_value(L"Loop Enabled"));
+		}
+
+		else
+		{
+			MainWindowPointer->LoopButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::RepeatAll));
+			winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->LoopButton(), winrt::box_value(L"Loop Disabled"));
+		}
+	}
+	else
+	{
+		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [this]()
+			{
+				if (IsLoopEnabled)
+				{
+					MainWindowPointer->LoopButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::RepeatOne));
+					winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->LoopButton(), winrt::box_value(L"Loop Enabled"));
+
+				}
+
+				else
+				{
+					MainWindowPointer->LoopButton().Icon(winrt::Microsoft::UI::Xaml::Controls::SymbolIcon(winrt::Microsoft::UI::Xaml::Controls::Symbol::RepeatAll));
+					winrt::Microsoft::UI::Xaml::Controls::ToolTipService::SetToolTip(MainWindowPointer->LoopButton(), winrt::box_value(L"Loop Disabled"));
+
 				}
 			});
 	}

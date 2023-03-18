@@ -75,9 +75,9 @@ namespace winrt::Folderify::implementation
     }
 
 
-    void MainWindow::RepeatButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
+    void MainWindow::LoopButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
     {
-        //TODO: Alternate between repeat modes
+        ControllerObject->LoopToggle();
     }
 
 
@@ -94,7 +94,14 @@ namespace winrt::Folderify::implementation
 
     void MainWindow::PlayPauseButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
     {
-        ControllerObject->Play();
+		if (ControllerObject->GetPlayerState() == MMFSoundPlayerLib::Playing)
+		{
+			ControllerObject->Pause();
+		}
+        else if (ControllerObject->GetPlayerState() == MMFSoundPlayerLib::Paused)
+        {
+            ControllerObject->Play();
+        }
     }
 
 
@@ -109,6 +116,26 @@ namespace winrt::Folderify::implementation
         delete ControllerObject;
     }
 
+    void MainWindow::TrackBar_ManipulationStarting(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::ManipulationStartingRoutedEventArgs const& e)
+    {
+        ControllerObject->SongPositionBarHeld = true;
+        ControllerObject->Seek(TrackBar().Value());
+        ControllerObject->SongPositionBarHeld = false;
+        //Implement ManipulationStarted
+    }
+
+    void MainWindow::TrackBar_ManipulationStarted(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::ManipulationStartedRoutedEventArgs const& e)
+    {
+        ControllerObject->SongPositionBarHeld = true;
+    }
+
+    void MainWindow::TrackBar_ManipulationCompleted(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::ManipulationCompletedRoutedEventArgs const& e)
+    {
+        ControllerObject->Seek(TrackBar().Value());
+        ControllerObject->SongPositionBarHeld = false;
+    }
+
+    /*
     void MainWindow::TrackBar_PointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
     {
 		ControllerObject->SongPositionBarHeld = true;
@@ -121,7 +148,6 @@ namespace winrt::Folderify::implementation
 		ControllerObject->SongPositionBarHeld = false;
     }
 
-
     void MainWindow::TrackBar_PointerCanceled(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e)
     {
 		if (ControllerObject->SongPositionBarHeld)
@@ -130,4 +156,5 @@ namespace winrt::Folderify::implementation
 			ControllerObject->SongPositionBarHeld = false;
 		}
     }
+    */
 }
