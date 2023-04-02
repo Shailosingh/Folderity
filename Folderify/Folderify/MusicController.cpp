@@ -5,7 +5,7 @@
 #include <chrono>
 #include <format>
 #include <thread>
-#include <cassert>
+#include <SharedWindowVariables.h>
 
 using namespace MMFSoundPlayerLib;
 using namespace winrt::Windows::Storage;
@@ -15,20 +15,41 @@ namespace fs = std::filesystem;
 MusicController::MusicController(winrt::Folderify::implementation::MainWindow* mainWindow)
 {
 	//Initialize variables
-	CurrentSongIndex = 0;
+	CurrentSongIndex = -1;
 	MainWindowPointer = mainWindow;
 	IsLoopEnabled = false;
 	ProgramRunning = true;
-	EventLoopRunning = false;
 	SongPositionBarHeld = false;
 	TrackbarRange = MainWindowPointer->TrackBar().Maximum() - MainWindowPointer->TrackBar().Minimum();
 
-	//Initialize events
-	SongChangedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	HistoryUpdatedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	//Initialize Queue Page Events
+	QueueThreadRunning = false;
+	for (int index = 0; index < static_cast<int>(QueuePageEventEnums::NumberOfEvents); index++)
+	{
+		QueuePageEvents[index] = CreateEvent(NULL, FALSE, FALSE, NULL);
+		if (QueuePageEvents[index] == nullptr)
+		{
+			throw std::exception("Failed to create QueuePageEvents\n");
+		}
+	}
+	
+	//Initialize History Page Events
+	HistoryThreadRunning = false;
+	for (int index = 0; index < static_cast<int>(HistoryPageEventEnums::NumberOfEvents); index++)
+	{
+		HistoryPageEvents[index] = CreateEvent(NULL, FALSE, FALSE, NULL);
+		if (HistoryPageEvents[index] == nullptr)
+		{
+			throw std::exception("Failed to create HistoryPageEvents\n");
+		}
+	}
 
 	//Initialize mutex
 	QueueMutex = CreateMutex(NULL, FALSE, NULL);
+	if (QueueMutex == nullptr)
+	{
+		throw std::exception("Failed to create QueueMutex\n");
+	}
 	
 	//Test this out. DELETE .vs folder,CLEAN and REBUILD solution first
 	MainWindowPointer->Title(L"Folderity");
@@ -125,31 +146,53 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	}
 
 	//Launch event thread that shall manage song changes and TrackBar updates
-	std::thread eventThreadManager(&MusicController::EventThread, this);
-	eventThreadManager.detach();
+	EventThreadObject = std::thread{ &MusicController::EventThreadProc, this };
 }
 
 void MusicController::CloseController()
 {
+	//Signal to the dispatcher that the window is closing
+	WindowClosing = true;
+	
 	//Stop any songs playing
 	SoundPlayer->Stop();
 	
 	//Close event loop
 	ProgramRunning = false;
-	while (EventLoopRunning);
+	EventThreadObject.join();
 	
 	//Close the music player
 	SoundPlayer->Shutdown();
+
+	//Signal the Queue and History pages to close down and then, close up all handles controlled by the MusicController
+	if (QueueThreadRunning)
+	{
+		SetEvent(QueuePageEvents[static_cast<int>(QueuePageEventEnums::PageClosing)]);
+		WaitForSingleObject(QueuePageEvents[static_cast<int>(QueuePageEventEnums::PageClosed)], INFINITE);
+	}
+	for (int index = 0; index < static_cast<int>(QueuePageEventEnums::NumberOfEvents); index++)
+	{
+		CloseHandle(QueuePageEvents[index]);
+	}
+	
+	if (HistoryThreadRunning)
+	{
+		SetEvent(HistoryPageEvents[static_cast<int>(HistoryPageEventEnums::PageClosing)]);
+		WaitForSingleObject(HistoryPageEvents[static_cast<int>(HistoryPageEventEnums::PageClosed)], INFINITE);
+	}
+	for (int index = 0; index < static_cast<int>(HistoryPageEventEnums::NumberOfEvents); index++)
+	{
+		CloseHandle(HistoryPageEvents[index]);
+	}
+	
+	CloseHandle(QueueMutex);
 	
 	//Save up the queue file
 	UpdateQueueFile();
 }
 
-void MusicController::EventThread()
+void MusicController::EventThreadProc()
 {
-	//Notify that the event loop is running
-	EventLoopRunning = true;
-	
 	//Try to set the song
 	LoadSongIntoPlayer(CurrentSongIndex);
 
@@ -188,9 +231,6 @@ void MusicController::EventThread()
 		//Sleep for 100 ms so CPU doesn't freak out
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
-
-	//Notify that the event loop is no longer running
-	EventLoopRunning = false;
 }
 
 //File IO Initialization helpers-------------------------------------------------------------------
@@ -306,7 +346,7 @@ bool MusicController::LoadQueueSongsFromQueueFile()
 	}
 
 	//Read the index of the current song in the queue
-	inputReader.read(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(uint32_t));
+	inputReader.read(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(int32_t));
 
 	//Read the number of songs from the file
 	uint32_t numSongs = 0;
@@ -531,7 +571,7 @@ bool MusicController::UpdateQueueFile()
 	}
 	
 	//Write the index of the current song in the queue
-	outputWriter.write(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(uint32_t));
+	outputWriter.write(reinterpret_cast<char*>(&CurrentSongIndex), sizeof(int32_t));
 
 	//Write the number of songs to the file
 	uint32_t numSongs = PlayerQueue.size();
@@ -711,34 +751,6 @@ bool MusicController::UpdatePlaylistOrderFile(const Playlist& playlistObject)
 	return true;
 }
 
-/// <summary>
-/// Clears out the current queue and plops the songs from the given playlist into the queue.
-/// </summary>
-/// <param name="playlistObject">Playlist to be plopped</param>
-void MusicController::LoadPlaylistIntoQueue(const Playlist& playlistObject)
-{
-	//Clear the queue
-	PlayerQueue.clear();
-
-	//Add all songs from the playlist to the queue
-	for (const std::wstring& songName : playlistObject.songNamesWithExtension)
-	{
-		//Create a new song object
-		Song newSong;
-		newSong.playlistPath = playlistObject.playlistPath;
-		newSong.songNameWithExtension = songName;
-		
-		//Add the song to the queue
-		PlayerQueue.push_back(newSong);
-	}
-
-	//Update the queue file
-	UpdateQueueFile();
-
-	//Update the current song index
-	CurrentSongIndex = 0;
-}
-
 //Song Loaders-------------------------------------------------------------------------------------
 
 /// <summary>
@@ -754,6 +766,8 @@ void MusicController::LoadSongIntoPlayer(uint32_t index)
 	
 	if (!PlayerQueue.empty())
 	{
+		uint32_t oldNumSongsInQueue = PlayerQueue.size();
+		int32_t oldIndex = CurrentSongIndex;
 		bool successfullySetSong;
 		do
 		{
@@ -780,12 +794,23 @@ void MusicController::LoadSongIntoPlayer(uint32_t index)
 		
 		//Set the current index as the index of the song that has started playing
 		CurrentSongIndex = index;
+
+		//If the number of songs in the queue has changed, signal the QueuePage that the SongList changed
+		if (oldNumSongsInQueue != PlayerQueue.size())
+		{
+			SetEvent(QueuePageEvents[static_cast<int>(QueuePageEventEnums::SongListChanged)]);
+		}
+		
+		else if (oldIndex != CurrentSongIndex)
+		{
+			SetEvent(QueuePageEvents[static_cast<int>(QueuePageEventEnums::IndexChanged)]);
+		}
 	}
 
 	//If the queue is empty, set the current song index to default 0
 	else
 	{
-		CurrentSongIndex = 0;
+		CurrentSongIndex = -1;
 	}
 
 	//Release the mutex
@@ -912,6 +937,54 @@ void MusicController::GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderi
 			playlistPageModel.Songs().RemoveAtEnd();
 		}
 	}
+}
+
+int32_t MusicController::GetCurrentSongIndex()
+{
+	return CurrentSongIndex;
+}
+
+/// <summary>
+/// Loads the song names into the queue page model and then returns the index of the current song
+/// playing
+/// </summary>
+/// <param name="queuePageModel">The queue's page model</param>
+/// <returns>The currently playing song index</returns>
+int32_t MusicController::GetQueueSongNames(winrt::Folderify::QueuePageViewModel& queuePageModel)
+{
+	//Check if the number of songs in input is too small or equal to the real amount
+	if (queuePageModel.Songs().Size() <= PlayerQueue.size())
+	{
+		//If too small, update all songs that will fit
+		for (uint32_t index = 0; index < queuePageModel.Songs().Size(); index++)
+		{
+			queuePageModel.Songs().SetAt(index, winrt::Folderify::SongInfo((fs::path(PlayerQueue[index].playlistPath) / fs::path(PlayerQueue[index].songNameWithExtension)).c_str()));
+		}
+
+		//Append rest of songs if there are any left
+		for (uint32_t index = queuePageModel.Songs().Size(); index < PlayerQueue.size(); index++)
+		{
+			queuePageModel.Songs().Append(winrt::Folderify::SongInfo((fs::path(PlayerQueue[index].playlistPath) / fs::path(PlayerQueue[index].songNameWithExtension)).c_str()));
+		}
+	}
+	
+	//If input list of songs is too big
+	else
+	{
+		//Update input for all songs in this playlist
+		for (uint32_t index = 0; index < PlayerQueue.size(); index++)
+		{
+			queuePageModel.Songs().SetAt(index, winrt::Folderify::SongInfo((fs::path(PlayerQueue[index].playlistPath) / fs::path(PlayerQueue[index].songNameWithExtension)).c_str()));
+		}
+
+		//Purge the excess elements
+		while (queuePageModel.Songs().Size() > PlayerQueue.size())
+		{
+			queuePageModel.Songs().RemoveAtEnd();
+		}
+	}
+
+	return CurrentSongIndex;
 }
 
 bool MusicController::RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
@@ -1073,7 +1146,7 @@ void MusicController::AddPlaylistToQueue(int32_t playlistIndex, int32_t starting
 	{
 		return;
 	}
-
+	
 	//Ensure only one thread is changing around the queue and starting songs at once
 	WaitForSingleObject(QueueMutex, INFINITE);
 
@@ -1091,6 +1164,15 @@ void MusicController::AddPlaylistToQueue(int32_t playlistIndex, int32_t starting
 
 	//Set the starting song
 	LoadSongIntoPlayer(startingSongIndex);
+}
+
+void MusicController::ChangeSongIndex(int32_t newIndex)
+{
+	//If the selection index of the view is the same as the current song index, do nothing, otherwise, change the song
+	if (newIndex != CurrentSongIndex)
+	{
+		LoadSongIntoPlayer(newIndex);
+	}
 }
 //Player Controls----------------------------------------------------------------------------------
 void MusicController::Play()
@@ -1207,6 +1289,11 @@ void MusicController::DispatchCurrentSongPositionAndDuration()
 	{
 		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [this, currentTimestamp, songPositionPercent, totalTimestamp]()
 			{
+				//Check if window is still open
+				if (WindowClosing)
+				{
+					return;
+				}
 				MainWindowPointer->CurrentTimestampBlock().Text(currentTimestamp);
 				MainWindowPointer->TrackBar().Value(songPositionPercent);
 				MainWindowPointer->TotalSongDurationBlock().Text(totalTimestamp);

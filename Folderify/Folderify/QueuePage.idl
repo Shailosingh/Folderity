@@ -1,12 +1,11 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
+// QueuePage.idl
+import "QueuePageViewModel.idl";
 
 namespace Folderify
 {
-    [default_interface]
     runtimeclass QueuePage : Microsoft.UI.Xaml.Controls.Page
     {
         QueuePage();
-        Int32 MyProperty;
+        QueuePageViewModel MainViewModel{ get; };
     }
 }

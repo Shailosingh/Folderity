@@ -1,0 +1,11 @@
+//QueuePageViewModel.idl
+import "SongInfo.idl";
+
+namespace Folderify
+{
+	runtimeclass QueuePageViewModel
+	{
+		QueuePageViewModel();
+		Windows.Foundation.Collections.IObservableVector<SongInfo> Songs{ get; };
+	}
+}

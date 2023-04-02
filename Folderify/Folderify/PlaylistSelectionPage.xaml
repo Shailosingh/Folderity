@@ -60,11 +60,11 @@
                       SelectionChanged="PlaylistItemsListView_SelectionChanged"
                       DragItemsStarting="PlaylistItemsListView_DragItemsStarting"
                       DragItemsCompleted="PlaylistItemsListView_DragItemsCompleted">
-                <ItemsControl.ItemTemplate>
+                <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:SongInfo">
                         <TextBlock Text="{x:Bind SongTitle, Mode=OneWay}"/>
                     </DataTemplate>
-                </ItemsControl.ItemTemplate>
+                </ListView.ItemTemplate>
             </ListView>
         </Grid>
     </Grid>

@@ -17,6 +17,7 @@
     <Midl Include="SongInfo.idl" />
     <Midl Include="PlaylistInfo.idl" />
     <Midl Include="PlaylistSelectionPageViewModel.idl" />
+    <Midl Include="QueuePageViewModel.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -26,6 +27,7 @@
     <ClCompile Include="SongInfo.cpp" />
     <ClCompile Include="PlaylistInfo.cpp" />
     <ClCompile Include="PlaylistSelectionPageViewModel.cpp" />
+    <ClCompile Include="QueuePageViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -34,6 +36,7 @@
     <ClInclude Include="SongInfo.h" />
     <ClInclude Include="PlaylistInfo.h" />
     <ClInclude Include="PlaylistSelectionPageViewModel.h" />
+    <ClInclude Include="QueuePageViewModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

@@ -23,6 +23,9 @@ namespace winrt::Folderify::implementation
 		//Initialize the view model that will manage song and playlist lists
 		m_mainViewModel = winrt::make<PlaylistSelectionPageViewModel>();
 
+        //Initialize drag state bool
+		IsSongBeingDragged = false;
+
         //Get all playlist info
 		ControllerObject->GetPlaylistNames(m_mainViewModel);
 
@@ -113,19 +116,22 @@ namespace winrt::Folderify::implementation
     
     void PlaylistSelectionPage::PlaylistItemsListView_SelectionChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const& e)
     {
-        //Load the selected song and its playlist in the queue
-        ControllerObject->AddPlaylistToQueue(AllPlaylistsListView().SelectedIndex(), PlaylistItemsListView().SelectedIndex());
+        //Load the selected song and its playlist in the queue only if a song isn't being dragged
+        if (!IsSongBeingDragged)
+        {
+            ControllerObject->AddPlaylistToQueue(AllPlaylistsListView().SelectedIndex(), PlaylistItemsListView().SelectedIndex());
+        }
     }
 
     void PlaylistSelectionPage::PlaylistItemsListView_DragItemsStarting(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::DragItemsStartingEventArgs const& e)
     {
-		//Not too sure what to do with this event but, it seems it will be useful in the future
+		IsSongBeingDragged = true;
     }
-
 
     void PlaylistSelectionPage::PlaylistItemsListView_DragItemsCompleted(winrt::Microsoft::UI::Xaml::Controls::ListViewBase const& sender, winrt::Microsoft::UI::Xaml::Controls::DragItemsCompletedEventArgs const& args)
     {
 		ControllerObject->UpdatePlaylist(AllPlaylistsListView().SelectedIndex(), m_mainViewModel);
+        IsSongBeingDragged = false;
     }
     
     void PlaylistSelectionPage::RefreshButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)

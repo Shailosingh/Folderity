@@ -3,12 +3,33 @@
 #include <vector>
 #include <filesystem>
 #include <queue>
+#include <thread>
 #include "MainWindow.xaml.h"
 #include "PlaylistSelectionPageViewModel.h"
+#include "QueuePageViewModel.h"
 
 //This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
 //#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Desktop 
 #include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Laptop
+
+enum class QueuePageEventEnums
+{
+	IndexChanged,
+	SongListChanged,
+	PageClosing,
+	PageClosed,
+
+	NumberOfEvents
+};
+
+enum class HistoryPageEventEnums
+{
+	SongAdded,
+	PageClosing,
+	PageClosed,
+
+	NumberOfEvents
+};
 
 typedef struct Song
 {
@@ -39,7 +60,7 @@ private:
 	CComPtr<MMFSoundPlayerLib::MMFSoundPlayer> SoundPlayer;
 	winrt::Folderify::implementation::MainWindow* MainWindowPointer;
 	std::vector<Song> PlayerQueue;
-	uint32_t CurrentSongIndex;
+	int32_t CurrentSongIndex;
 	std::vector<Playlist> AllPlaylists;
 	std::vector<Song> SongHistory;
 	bool IsLoopEnabled;
@@ -49,8 +70,8 @@ private:
 	std::wstring Convert100NanoSecondsToTimestamp(UINT64 input100NanoSeconds);
 
 	//Event fields and functions
-	void EventThread();
-	bool EventLoopRunning;
+	void EventThreadProc();
+	std::thread EventThreadObject;
 	bool ProgramRunning;
 	
 	//File IO Initialization helpers
@@ -66,7 +87,6 @@ private:
 	bool UpdateHistoryFile();
 	bool CheckForAndHandleAddedOrRemovedSongs(Playlist& playlistObject);
 	bool UpdatePlaylistOrderFile(const Playlist& playlistObject);
-	void LoadPlaylistIntoQueue(const Playlist& playlistObject);
 
 	//Song loaders
 	void LoadSongIntoPlayer(uint32_t index);
@@ -85,8 +105,11 @@ private:
 	
 public:
 	//Public events (TODO: Use these for something. Especially if you don't make the lists public)
-	HANDLE SongChangedEvent;
-	HANDLE HistoryUpdatedEvent;
+	HANDLE QueuePageEvents[static_cast<int>(QueuePageEventEnums::NumberOfEvents)];
+	bool QueueThreadRunning;
+	
+	HANDLE HistoryPageEvents[static_cast<int>(HistoryPageEventEnums::NumberOfEvents)];
+	bool HistoryThreadRunning;
 
 	//Datafields
 	bool SongPositionBarHeld;
@@ -99,6 +122,8 @@ public:
 	double GetVolumeLevel();
 	void GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	int32_t GetCurrentSongIndex();
+	int32_t GetQueueSongNames(winrt::Folderify::QueuePageViewModel& queuePageModel);
 	bool RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	HWND GetWindowHandle();
 	
@@ -107,6 +132,7 @@ public:
 	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void AddPlaylistToQueue(int32_t playlistIndex, int32_t startingSongIndex);
+	void ChangeSongIndex(int32_t newIndex);
 	
 	//Player Controls
 	void Play();

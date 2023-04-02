@@ -19,6 +19,7 @@
         <TextBlock x:Name="NumberOfSongsInQueueTextBlock" Grid.Row="0" Text="0 songs" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left" Margin="20,0,0,0"/>
 
         <ListView x:Name="QueueListView" 
+                  ItemsSource="{x:Bind MainViewModel.Songs, Mode = OneWay}"
                   Grid.Row="1"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
@@ -26,7 +27,19 @@
                   CanReorderItems="True" 
                   CanDragItems="True" 
                   AllowDrop="True"
-                  Background="DarkBlue"
-                  Margin="20,0,20,20"/>
+                  DragItemsStarting="QueueListView_DragItemsStarting"
+                  DragItemsCompleted="QueueListView_DragItemsCompleted"
+                  SelectionChanged="QueueListView_SelectionChanged"
+                  Background="DarkSlateGray"
+                  Margin="20,0,20,20">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:SongInfo">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,5,0,5">
+                        <TextBlock Text="{x:Bind SongTitle, Mode=OneWay}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>
+                        <TextBlock Text="{x:Bind PlaylistTitle, Mode=OneWay}"  FontWeight="Thin" Foreground="LightGray" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Page>
