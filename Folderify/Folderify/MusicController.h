@@ -9,8 +9,8 @@
 #include "QueuePageViewModel.h"
 
 //This header path will be diferent depending on where you store your MMFSoundPlayer. Mine is here. Important thing is that you import the "MMFSoundPlayer.h" file in the MMFSoundPlayer project
-//#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Desktop 
-#include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Laptop
+#include "/Users/compu/Desktop/Code Projects/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Desktop 
+//#include "/C++ Projects/MMFSoundPlayer/MMFSoundPlayer/MMFSoundPlayer.h" //Laptop
 
 enum class QueuePageEventEnums
 {
@@ -131,6 +131,7 @@ public:
 	void SetVolumeLevel(double volumeLevel);
 	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	void UpdateQueue(int32_t newQueueIndex, winrt::Folderify::QueuePageViewModel& queuePageModel);
 	void AddPlaylistToQueue(int32_t playlistIndex, int32_t startingSongIndex);
 	void ChangeSongIndex(int32_t newIndex);
 	

@@ -1137,6 +1137,46 @@ void MusicController::UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::Pl
 	}
 }
 
+void MusicController::UpdateQueue(int32_t newQueueIndex, winrt::Folderify::QueuePageViewModel& queuePageModel)
+{
+	//Ensure the QueuePageModel is valid, by checking that the queue sizes are equal
+	assert(queuePageModel.Songs().Size() == PlayerQueue.size());
+
+	//Lock the queue, to ensure nothing else touches it while the PlayerQueue is being updated
+	WaitForSingleObject(QueueMutex, INFINITE);
+
+	//Iterate through every song in the queuePageModel and if the corresponding song in the PlayerQueue is different, update the PlayerQueue
+	for (uint32_t index = 0; index < queuePageModel.Songs().Size(); index++)
+	{
+		//Get the current song
+		std::wstring currentSong = fs::path(PlayerQueue[index].playlistPath) / fs::path(PlayerQueue[index].songNameWithExtension);
+
+		//Get the new song
+		std::wstring newSong = fs::path(queuePageModel.Songs().GetAt(index).SongPath().c_str()).filename();
+
+		//If the song has changed, update the PlayerQueue
+		if (currentSong != newSong)
+		{
+			//Update the PlayerQueue
+			PlayerQueue[index].playlistPath = fs::path(queuePageModel.Songs().GetAt(index).SongPath().c_str()).parent_path().wstring();
+			PlayerQueue[index].songNameWithExtension = fs::path(queuePageModel.Songs().GetAt(index).SongPath().c_str()).filename().wstring();
+		}
+	}
+
+	//Ensure that the new queue index is valid, before setting it
+	bool isQueueIndexWithinBounds = (newQueueIndex >= 0) && (newQueueIndex < PlayerQueue.size());
+	if (!isQueueIndexWithinBounds)
+	{
+		return;
+	}
+
+	//Set the new queue index
+	CurrentSongIndex = newQueueIndex;
+
+	//Release the queue
+	ReleaseMutex(QueueMutex);
+}
+
 void MusicController::AddPlaylistToQueue(int32_t playlistIndex, int32_t startingSongIndex)
 {
 	//It should be impossible for playlistIndex and startingSongIndex to be out of bounds

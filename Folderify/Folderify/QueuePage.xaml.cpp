@@ -65,6 +65,7 @@ namespace winrt::Folderify::implementation
 
 	void QueuePage::QueueListView_DragItemsCompleted(winrt::Microsoft::UI::Xaml::Controls::ListViewBase const& sender, winrt::Microsoft::UI::Xaml::Controls::DragItemsCompletedEventArgs const& args)
 	{
+		ControllerObject->UpdateQueue(QueueListView().SelectedIndex(), m_mainViewModel);
 		IsSongBeingDragged = false;
 	}
 
