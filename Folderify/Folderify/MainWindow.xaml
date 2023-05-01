@@ -25,9 +25,7 @@
                 <NavigationViewItem Icon="BrowsePhotos"  Content="History" Tag="History"/>
             </NavigationView.FooterMenuItems>
 
-            <ScrollViewer>
-                <Frame x:Name="ContentFrame"/>
-            </ScrollViewer>
+            <Frame x:Name="ContentFrame"/>
         </NavigationView>
 
         <!--The Music Controller Bar-->
