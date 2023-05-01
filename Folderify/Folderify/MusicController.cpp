@@ -1172,6 +1172,8 @@ void MusicController::UpdateQueue(int32_t newQueueIndex, winrt::Folderify::Queue
 
 	//Set the new queue index
 	CurrentSongIndex = newQueueIndex;
+	DispatchPreviousButtonToggle(CurrentSongIndex != 0);
+	DispatchNextButtonToggle(CurrentSongIndex != PlayerQueue.size() - 1);
 
 	//Release the queue
 	ReleaseMutex(QueueMutex);
