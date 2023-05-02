@@ -65,6 +65,7 @@ private:
 	std::vector<Song> SongHistory;
 	bool IsLoopEnabled;
 	double TrackbarRange;
+	double VolumeBarRange;
 
 	//String helpers
 	std::wstring Convert100NanoSecondsToTimestamp(UINT64 input100NanoSeconds);
@@ -102,14 +103,15 @@ private:
 	void DispatchPlayButtonIcon(bool isPlayIcon);
 	void DispatchLoopButtonIcon();
 	void DispatchTrackBarToggle(bool isEnabled);
+	void DispatchVolumeBarValue();
 	
 public:
 	//Public events (TODO: Use these for something. Especially if you don't make the lists public)
 	HANDLE QueuePageEvents[static_cast<int>(QueuePageEventEnums::NumberOfEvents)];
 	bool QueueThreadRunning;
-	
 	HANDLE HistoryPageEvents[static_cast<int>(HistoryPageEventEnums::NumberOfEvents)];
 	bool HistoryThreadRunning;
+	HANDLE VolumeExternallyChanged;
 
 	//Datafields
 	bool SongPositionBarHeld;
@@ -119,7 +121,7 @@ public:
 	
 	//Getters
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
-	double GetVolumeLevel();
+	double GetNewVolumeBarValue();
 	void GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	int32_t GetCurrentSongIndex();
@@ -128,7 +130,7 @@ public:
 	HWND GetWindowHandle();
 	
 	//Setters
-	void SetVolumeLevel(double volumeLevel);
+	bool SetVolumeLevel(double volumeBarValue);
 	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void UpdateQueue(int32_t newQueueIndex, winrt::Folderify::QueuePageViewModel& queuePageModel);

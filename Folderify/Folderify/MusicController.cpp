@@ -21,6 +21,7 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	ProgramRunning = true;
 	SongPositionBarHeld = false;
 	TrackbarRange = MainWindowPointer->TrackBar().Maximum() - MainWindowPointer->TrackBar().Minimum();
+	VolumeBarRange = MainWindowPointer->VolumeControlSlider().Maximum() - MainWindowPointer->VolumeControlSlider().Minimum();
 
 	//Initialize Queue Page Events
 	QueueThreadRunning = false;
@@ -60,6 +61,9 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	{
 		throw std::exception("Failed to create sound player\n");
 	}
+
+	//Retrieve the volume externally changed event
+	VolumeExternallyChanged = SoundPlayer->VolumeExternallyChanged;
 	
 	//Get LocalApplicationData folder
 	std::wstring localFolder = ApplicationData::Current().LocalFolder().Path().c_str();
@@ -161,8 +165,9 @@ void MusicController::CloseController()
 	ProgramRunning = false;
 	EventThreadObject.join();
 	
-	//Close the music player
+	//Close the music player (which closes down the volume event)
 	SoundPlayer->Shutdown();
+	VolumeExternallyChanged = nullptr;
 
 	//Signal the Queue and History pages to close down and then, close up all handles controlled by the MusicController
 	if (QueueThreadRunning)
@@ -209,6 +214,14 @@ void MusicController::EventThreadProc()
 			if (!SongPositionBarHeld)
 			{
 				DispatchCurrentSongPositionAndDuration();
+			}
+
+			//Check if volume has changed externally
+			DWORD waitResult = WaitForSingleObject(VolumeExternallyChanged, 0);
+			if (waitResult == WAIT_OBJECT_0)
+			{
+				//Update the volume bar
+				DispatchVolumeBarValue();
 			}
 			
 			//Sleep for 100 ms so CPU doesn't freak out
@@ -884,6 +897,17 @@ PlayerState MusicController::GetPlayerState()
 	return SoundPlayer->GetPlayerState();
 }
 
+double MusicController::GetNewVolumeBarValue()
+{
+	float volumeLevel = 0;
+	HRESULT hr = SoundPlayer->GetVolumeLevel(volumeLevel);
+	if (FAILED(hr))
+	{
+		return 0;
+	}
+	return volumeLevel*VolumeBarRange;
+}
+
 //NOTE: Only done during initialization of PlaylistSelectionPage
 void MusicController::GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
@@ -1024,6 +1048,18 @@ HWND MusicController::GetWindowHandle()
 }
 
 //Setters------------------------------------------------------------------------------------------
+bool MusicController::SetVolumeLevel(double volumeBarValue)
+{
+	//Set the volume level
+	HRESULT hr = SoundPlayer->SetVolume(volumeBarValue/VolumeBarRange);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	
+	return true;
+}
+
 bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Check if a playlist already exists in this folder by checking if a playlist order file is there
@@ -1472,6 +1508,21 @@ void MusicController::DispatchTrackBarToggle(bool isEnabled)
 		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [isEnabled, this]()
 			{
 				MainWindowPointer->TrackBar().IsEnabled(isEnabled);
+			});
+	}
+}
+
+void MusicController::DispatchVolumeBarValue()
+{
+	if (MainWindowPointer->DispatcherQueue().HasThreadAccess())
+	{
+		MainWindowPointer->VolumeControlSlider().Value(GetNewVolumeBarValue());
+	}
+	else
+	{
+		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [this]()
+			{
+				MainWindowPointer->VolumeControlSlider().Value(GetNewVolumeBarValue());
 			});
 	}
 }

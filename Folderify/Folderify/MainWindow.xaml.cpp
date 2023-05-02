@@ -28,6 +28,9 @@ namespace winrt::Folderify::implementation
             OutputDebugStringA(error.c_str());
             exit(1);
 		}
+
+		//Set the volume bar to the max volume
+        VolumeControlSlider().Value(VolumeControlSlider().Maximum());
     }
 
     int32_t MainWindow::MyProperty()
@@ -132,5 +135,22 @@ namespace winrt::Folderify::implementation
     {
         ControllerObject->Seek(TrackBar().Value());
         ControllerObject->SongPositionBarHeld = false;
+    }
+
+    void MainWindow::VolumeControlSlider_ValueChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs const& e)
+    {
+		ControllerObject->SetVolumeLevel(VolumeControlSlider().Value());
+    }
+
+    void MainWindow::VolumeButton_DoubleTapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::DoubleTappedRoutedEventArgs const& e)
+    {
+		if (VolumeControlSlider().Value() == 0)
+		{
+			VolumeControlSlider().Value(VolumeControlSlider().Maximum());
+		}
+		else
+		{
+			VolumeControlSlider().Value(0);
+		}
     }
 }

@@ -90,11 +90,11 @@
 
             <!--Music options section-->
             <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,20,10,20">
-                <AppBarButton x:Name="VolumeButton" ToolTipService.ToolTip="Double-Click To Mute" Icon="Volume">
+                <AppBarButton x:Name="VolumeButton" ToolTipService.ToolTip="Double-Click To Mute" Icon="Volume" DoubleTapped="VolumeButton_DoubleTapped">
                     <AppBarButton.Flyout>
-                        <Flyout>
+                        <Flyout OverlayInputPassThroughElement="{x:Bind Content}">
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                                <Slider x:Name="VolumeControlSlider" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Height="200" TickFrequency="10" TickPlacement="Outside"/>
+                                <Slider x:Name="VolumeControlSlider" ValueChanged="VolumeControlSlider_ValueChanged" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical" Height="200" TickFrequency="10" TickPlacement="Outside"/>
                             </StackPanel>
                         </Flyout>
                     </AppBarButton.Flyout>
