@@ -196,6 +196,10 @@ void MusicController::CloseController()
 	UpdateQueueFile();
 }
 
+/// <summary>
+/// Manages the loop that will automatically change songs, iterate through the queue,
+/// update the TrackBar/Timestamps and update the volume bar when the volume is changed externally
+/// </summary>
 void MusicController::EventThreadProc()
 {
 	//Try to set the song
@@ -418,6 +422,11 @@ bool MusicController::LoadQueueSongsFromQueueFile()
 	return true;
 }
 
+/// <summary>
+/// Takes every song from the history file and record it into the song history
+/// vector
+/// </summary>
+/// <returns>True if the load was successful</returns>
 bool MusicController::LoadHistoryFromHistoryFile()
 {
 	//Get LocalApplicationData folder
@@ -610,6 +619,10 @@ bool MusicController::UpdateQueueFile()
 	return true;
 }
 
+/// <summary>
+/// Takes the Song History vector and records every song into the saved history file
+/// </summary>
+/// <returns>Whether the history file save was successful</returns>
 bool MusicController::UpdateHistoryFile()
 {
 	//Get LocalApplicationData folder
@@ -883,12 +896,19 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 }
 
 //General Helpers----------------------------------------------------------------------------------
+
+/// <summary>
+/// Takes input that is the number of 100 nanoseconds in the timespan, and converts it into a timestamp
+/// that is in minutes and seconds (mm:ss)
+/// </summary>
+/// <param name="input100NanoSeconds">Timespan in 100 nanosecond units</param>
+/// <returns>Timestamp in mm:ss (minutes and seconds)</returns>
 std::wstring MusicController::Convert100NanoSecondsToTimestamp(UINT64 input100NanoSeconds)
 {
 	UINT64 seconds = input100NanoSeconds / OneSecond_100NanoSecondUnits;
 	UINT64 minutes = seconds / 60;
 	seconds = seconds % 60;
-	return std::format(L"{:02}:{:02}", minutes, seconds);
+	return std::format(L"{}:{:02}", minutes, seconds);
 }
 
 //Getters------------------------------------------------------------------------------------------
@@ -909,6 +929,11 @@ double MusicController::GetNewVolumeBarValue()
 }
 
 //NOTE: Only done during initialization of PlaylistSelectionPage
+
+/// <summary>
+/// Takes the Playlist page's UI model and fills the playlist vector with all the saved playlist info
+/// </summary>
+/// <param name="playlistPageModel">Playlist Page's model that dictates the UI</param>
 void MusicController::GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Clear out the input vector
@@ -921,6 +946,11 @@ void MusicController::GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageVi
 	}
 }
 
+/// <summary>
+/// Takes the Playlist page's UI model and fills the song vector with all the songs in the selected playlist
+/// </summary>
+/// <param name="playlistIndex">Index of the selected playlist</param>
+/// <param name="playlistPageModel">Playlist Page's model that dictates the UI</param>
 void MusicController::GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Ensure that the playlist index is valid
@@ -1011,6 +1041,12 @@ int32_t MusicController::GetQueueSongNames(winrt::Folderify::QueuePageViewModel&
 	return CurrentSongIndex;
 }
 
+/// <summary>
+/// Updates the UI's list of songs for the currently selected playlist index
+/// </summary>
+/// <param name="playlistIndex">Currently selected playlist index</param>
+/// <param name="playlistPageModel">Playlist page's UI model</param>
+/// <returns>Whether the refresh was successful</returns>
 bool MusicController::RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Ensure that the playlist index is valid
@@ -1060,6 +1096,13 @@ bool MusicController::SetVolumeLevel(double volumeBarValue)
 	return true;
 }
 
+/// <summary>
+/// Takes in path to folder and turns contents into a playlist. If the folder already has a playlist file, use that file to create the playlist. If not
+/// create the playlist from scratch. Then add the playlist to the list of playlists and update the UI
+/// </summary>
+/// <param name="newPlaylistFolderPath">Path to folder that shall be made into playlist</param>
+/// <param name="playlistPageModel">Playlist page's UI model</param>
+/// <returns>True if the playlist was made. False if it already exists</returns>
 bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Check if a playlist already exists in this folder by checking if a playlist order file is there
@@ -1136,6 +1179,11 @@ bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPat
 	return true;
 }
 
+/// <summary>
+/// Updates the selected playlist's songs in the UI to the actual list and order of songs for that playlist
+/// </summary>
+/// <param name="playlistIndex">Index to selected playlist</param>
+/// <param name="playlistPageModel">Playlist page's UI model</param>
 void MusicController::UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel)
 {
 	//Ensure that the playlist index is valid
@@ -1173,6 +1221,11 @@ void MusicController::UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::Pl
 	}
 }
 
+/// <summary>
+/// Updates the Queue to match the UI (if the UI has changed the order/selection of the queue)
+/// </summary>
+/// <param name="newQueueIndex">Newly selected index in Queue UI</param>
+/// <param name="queuePageModel">Queue page UI model</param>
 void MusicController::UpdateQueue(int32_t newQueueIndex, winrt::Folderify::QueuePageViewModel& queuePageModel)
 {
 	//Ensure the QueuePageModel is valid, by checking that the queue sizes are equal
@@ -1215,6 +1268,12 @@ void MusicController::UpdateQueue(int32_t newQueueIndex, winrt::Folderify::Queue
 	ReleaseMutex(QueueMutex);
 }
 
+/// <summary>
+/// Takes index of the playlist and the index of the song selected, and inserts the whole playlist into the queue,
+/// starting at the selected song
+/// </summary>
+/// <param name="playlistIndex">Selected playlist index</param>
+/// <param name="startingSongIndex">Selected song index</param>
 void MusicController::AddPlaylistToQueue(int32_t playlistIndex, int32_t startingSongIndex)
 {
 	//It should be impossible for playlistIndex and startingSongIndex to be out of bounds
@@ -1244,6 +1303,10 @@ void MusicController::AddPlaylistToQueue(int32_t playlistIndex, int32_t starting
 	LoadSongIntoPlayer(startingSongIndex);
 }
 
+/// <summary>
+/// Takes new selected index for queue and plays that song if not already selected 
+/// </summary>
+/// <param name="newIndex">Newly selected index in queue</param>
 void MusicController::ChangeSongIndex(int32_t newIndex)
 {
 	//If the selection index of the view is the same as the current song index, do nothing, otherwise, change the song
