@@ -132,6 +132,7 @@
       <DependentUpon>HistoryPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="HistoryPageViewModel.h" />
     <ClInclude Include="MusicController.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
@@ -186,6 +187,7 @@
       <DependentUpon>HistoryPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
+    <ClCompile Include="HistoryPageViewModel.cpp" />
     <ClCompile Include="MusicController.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -228,6 +230,7 @@
       <DependentUpon>HistoryPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Midl>
+    <Midl Include="HistoryPageViewModel.idl" />
     <Midl Include="MainWindow.idl">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>

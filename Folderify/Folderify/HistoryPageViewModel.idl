@@ -1,0 +1,12 @@
+//HistoryPageViewModel.idl
+import "SongInfo.idl";
+
+namespace Folderify
+{
+	runtimeclass HistoryPageViewModel : Windows.UI.Xaml.Data.INotifyPropertyChanged
+	{
+		HistoryPageViewModel(Boolean isHistoryEnabled);
+		Windows.Foundation.Collections.IObservableVector<SongInfo> Songs{ get; };
+		Boolean HistoryEnabled;
+	}
+}

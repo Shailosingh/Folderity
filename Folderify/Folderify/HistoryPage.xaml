@@ -10,7 +10,49 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="History Page" FontSize="48" />
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="50"/>
+        </Grid.RowDefinitions>
+
+        <ListView x:Name="HistoryListView"
+                  ItemsSource="{x:Bind MainViewModel.Songs, Mode = OneWay}"
+                  Grid.Row="0"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  SelectionMode="Single" 
+                  Background="DarkSlateGray"
+                  Margin="20,10,20,0">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:SongInfo">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,5,0,5">
+                        <TextBlock Text="{x:Bind SongTitle, Mode=OneWay}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>
+                        <TextBlock Text="{x:Bind PlaylistTitle, Mode=OneWay}"  FontWeight="Thin" Foreground="LightGray" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Grid Grid.Row="1" Margin="20,10,20,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="ClearHistoryButton" 
+                    Content="Clear History" 
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Tapped="ClearHistoryButton_Tapped"/>
+            
+            <ToggleSwitch x:Name="HistoryToggleSwitch" 
+                          OffContent="History Frozen" 
+                          OnContent="History Enabled" 
+                          Grid.Column="1"
+                          VerticalAlignment="Center"
+                          IsOn="{x:Bind MainViewModel.HistoryEnabled, Mode=TwoWay}"
+                          Toggled="HistoryToggleSwitch_Toggled"/>
+        </Grid>
+    </Grid>
 </Page>

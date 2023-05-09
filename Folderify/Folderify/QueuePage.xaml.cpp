@@ -94,7 +94,7 @@ namespace winrt::Folderify::implementation
 				break;
 				
 			case WAIT_OBJECT_0 + static_cast<int>(QueuePageEventEnums::SongListChanged):
-				DispatchSelectedIndex(ControllerObject->GetQueueSongNames(m_mainViewModel));
+				DispatchSongNames();
 				break;
 
 			case WAIT_OBJECT_0 + static_cast<int>(QueuePageEventEnums::PageClosing):
@@ -137,39 +137,13 @@ namespace winrt::Folderify::implementation
 	{
 		if (this->DispatcherQueue().HasThreadAccess())
 		{
-			//Retrieve the song names from the updated queue and update the UI
-			int32_t selectedIndex = ControllerObject->GetQueueSongNames(m_mainViewModel);
-			QueueListView().SelectedIndex(selectedIndex);
-			
-			//Update number of songs TextBlock
-			if (m_mainViewModel.Songs().Size() == 1)
-			{
-				NumberOfSongsInQueueTextBlock().Text(L"1 Song");
-			}
-
-			else
-			{
-				NumberOfSongsInQueueTextBlock().Text(std::to_wstring(m_mainViewModel.Songs().Size()) + L" Songs");
-			}
+			QueueListView().SelectedIndex(ControllerObject->GetQueueSongNames(m_mainViewModel));
 		}
 		else
 		{
 			bool isQueued = this->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [this]()
 				{
-					//Retrieve the song names from the updated queue and update the UI
-					int32_t selectedIndex = ControllerObject->GetQueueSongNames(m_mainViewModel);
-					QueueListView().SelectedIndex(selectedIndex);
-
-					//Update number of songs TextBlock
-					if (m_mainViewModel.Songs().Size() == 1)
-					{
-						NumberOfSongsInQueueTextBlock().Text(L"1 Song");
-					}
-
-					else
-					{
-						NumberOfSongsInQueueTextBlock().Text(std::to_wstring(m_mainViewModel.Songs().Size()) + L" Songs");
-					}
+					QueueListView().SelectedIndex(ControllerObject->GetQueueSongNames(m_mainViewModel));
 				});
 		}
 	}

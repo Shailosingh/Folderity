@@ -18,6 +18,7 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	CurrentSongIndex = -1;
 	MainWindowPointer = mainWindow;
 	IsLoopEnabled = false;
+	IsHistoryEnabled = true;
 	ProgramRunning = true;
 	SongPositionBarHeld = false;
 	TrackbarRange = MainWindowPointer->TrackBar().Maximum() - MainWindowPointer->TrackBar().Minimum();
@@ -45,11 +46,17 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 		}
 	}
 
-	//Initialize mutex
+	//Initialize mutexes
 	QueueMutex = CreateMutex(NULL, FALSE, NULL);
 	if (QueueMutex == nullptr)
 	{
 		throw std::exception("Failed to create QueueMutex\n");
+	}
+
+	HistoryMutex = CreateMutex(NULL, FALSE, NULL);
+	if (HistoryMutex == nullptr)
+	{
+		throw std::exception("Failed to create HistoryMutex\n");
 	}
 	
 	//Test this out. DELETE .vs folder,CLEAN and REBUILD solution first
@@ -777,6 +784,53 @@ bool MusicController::UpdatePlaylistOrderFile(const Playlist& playlistObject)
 	return true;
 }
 
+//General Helpers----------------------------------------------------------------------------------
+
+void MusicController::AddCurrentSongToHistory()
+{
+	//Wait for the history to be free to access
+	WaitForSingleObject(HistoryMutex, INFINITE);
+	
+	//Initialize variables
+	size_t MAX_HISTORY_COUNT = 1000;
+	
+	//If there are MAX_HISTORY_COUNT or more songs in the history, remove the oldest songs until there are MAX_HISTORY_COUNT - 1 songs
+	//https://stackoverflow.com/questions/7351899/remove-first-n-elements-from-a-stdvector
+	if (SongHistory.size() >= MAX_HISTORY_COUNT)
+	{
+		SongHistory.erase(SongHistory.begin(), SongHistory.begin() + (SongHistory.size() - MAX_HISTORY_COUNT + 1));
+	}
+	
+	//Check the first one hundred songs in the history (History vector is in reverse. If it is already there, delete it from the history
+	int32_t numSongsToCheck = 100;
+	if (SongHistory.size() < numSongsToCheck)
+	{
+		numSongsToCheck = SongHistory.size();
+	}
+
+
+	//TODO: FIX IF SIZE IS 0
+	for (int32_t index = 0; index < numSongsToCheck; index++)
+	{
+		//int32_t index = SongHistory.size() - 1 - reverseIndex;
+		int32_t reverseIndex = SongHistory.size() - 1 - index;
+		if (SongHistory[reverseIndex].playlistPath == PlayerQueue[CurrentSongIndex].playlistPath && SongHistory[reverseIndex].songNameWithExtension == PlayerQueue[CurrentSongIndex].songNameWithExtension)
+		{
+			SongHistory.erase(SongHistory.begin() + reverseIndex);
+			break;
+		}
+	}
+
+	//Add song to the history (put it at the back of vector)
+	SongHistory.push_back(PlayerQueue[CurrentSongIndex]);
+
+	//Signal the history page that it has updated
+	SetEvent(HistoryPageEvents[static_cast<int32_t>(HistoryPageEventEnums::SongListChanged)]);
+
+	//Release the history mutex
+	ReleaseMutex(HistoryMutex);
+}
+
 //Song Loaders-------------------------------------------------------------------------------------
 
 /// <summary>
@@ -820,6 +874,12 @@ void MusicController::LoadSongIntoPlayer(uint32_t index)
 		
 		//Set the current index as the index of the song that has started playing
 		CurrentSongIndex = index;
+
+		//Add to history if history is enabled
+		if (IsHistoryEnabled)
+		{
+			AddCurrentSongToHistory();
+		}
 
 		//If the number of songs in the queue has changed, signal the QueuePage that the SongList changed
 		if (oldNumSongsInQueue != PlayerQueue.size())
@@ -1006,6 +1066,9 @@ int32_t MusicController::GetCurrentSongIndex()
 /// <returns>The currently playing song index</returns>
 int32_t MusicController::GetQueueSongNames(winrt::Folderify::QueuePageViewModel& queuePageModel)
 {
+	//Accquire access to the queue
+	WaitForSingleObject(QueueMutex, INFINITE);
+	
 	//Check if the number of songs in input is too small or equal to the real amount
 	if (queuePageModel.Songs().Size() <= PlayerQueue.size())
 	{
@@ -1038,7 +1101,51 @@ int32_t MusicController::GetQueueSongNames(winrt::Folderify::QueuePageViewModel&
 		}
 	}
 
+	//Release access to the queue
+	ReleaseMutex(QueueMutex);
+
 	return CurrentSongIndex;
+}
+
+void MusicController::GetHistory(winrt::Folderify::HistoryPageViewModel & historyPageModel)
+{
+	//Accquire access to the history 
+	WaitForSingleObject(HistoryMutex, INFINITE);
+	
+	//Check if the number of songs in input is too small or equal to the real amount
+	if (historyPageModel.Songs().Size() <= SongHistory.size())
+	{
+		//If too small, update all songs that will fit
+		for (uint32_t index = 0; index < historyPageModel.Songs().Size(); index++)
+		{
+			historyPageModel.Songs().SetAt(index, winrt::Folderify::SongInfo((fs::path(SongHistory[(SongHistory.size() - 1 ) - index].playlistPath) / fs::path(SongHistory[(SongHistory.size() -1) - index].songNameWithExtension)).c_str()));
+		}
+
+		//Append rest of songs if there are any left
+		for (uint32_t index = historyPageModel.Songs().Size(); index < SongHistory.size(); index++)
+		{
+			historyPageModel.Songs().Append(winrt::Folderify::SongInfo((fs::path(SongHistory[(SongHistory.size() - 1) - index].playlistPath) / fs::path(SongHistory[(SongHistory.size() - 1) - index].songNameWithExtension)).c_str()));
+		}
+	}
+
+	//If input list of songs is too big
+	else
+	{
+		//Update input for all songs in this playlist
+		for (uint32_t index = 0; index < SongHistory.size(); index++)
+		{
+			historyPageModel.Songs().SetAt(index, winrt::Folderify::SongInfo((fs::path(SongHistory[(SongHistory.size() - 1) - index].playlistPath) / fs::path(SongHistory[(SongHistory.size() - 1) - index].songNameWithExtension)).c_str()));
+		}
+
+		//Purge the excess elements
+		while (historyPageModel.Songs().Size() > SongHistory.size())
+		{
+			historyPageModel.Songs().RemoveAtEnd();
+		}
+	}
+
+	//Release the history mutex
+	ReleaseMutex(HistoryMutex);
 }
 
 /// <summary>
@@ -1075,6 +1182,11 @@ bool MusicController::RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Fol
 	return true;
 }
 
+bool MusicController::HistoryEnabled()
+{
+	return IsHistoryEnabled;
+}
+
 HWND MusicController::GetWindowHandle()
 {
 	HWND hwnd;
@@ -1094,6 +1206,26 @@ bool MusicController::SetVolumeLevel(double volumeBarValue)
 	}
 	
 	return true;
+}
+
+void MusicController::SetHistoryTrackingState(bool historyIsEnabled)
+{
+	IsHistoryEnabled = historyIsEnabled;
+}
+
+void MusicController::ClearHistory()
+{
+	//Gain access to the history 
+	WaitForSingleObject(HistoryMutex, INFINITE);
+	
+	//Clear the history
+	SongHistory.clear();
+
+	//Signal the history page that the history song list has changed
+	SetEvent(HistoryPageEvents[static_cast<int32_t>(HistoryPageEventEnums::SongListChanged)]);
+
+	//Release access to the history
+	ReleaseMutex(HistoryMutex);
 }
 
 /// <summary>

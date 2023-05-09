@@ -24,7 +24,7 @@ enum class QueuePageEventEnums
 
 enum class HistoryPageEventEnums
 {
-	SongAdded,
+	SongListChanged,
 	PageClosing,
 	PageClosed,
 
@@ -64,6 +64,7 @@ private:
 	std::vector<Playlist> AllPlaylists;
 	std::vector<Song> SongHistory;
 	bool IsLoopEnabled;
+	bool IsHistoryEnabled;
 	double TrackbarRange;
 	double VolumeBarRange;
 
@@ -88,6 +89,9 @@ private:
 	bool UpdateHistoryFile();
 	bool CheckForAndHandleAddedOrRemovedSongs(Playlist& playlistObject);
 	bool UpdatePlaylistOrderFile(const Playlist& playlistObject);
+
+	//General helpers
+	void AddCurrentSongToHistory();
 
 	//Song loaders
 	void LoadSongIntoPlayer(uint32_t index);
@@ -118,6 +122,7 @@ public:
 	
 	//Public mutexes
 	HANDLE QueueMutex;
+	HANDLE HistoryMutex;
 	
 	//Getters
 	MMFSoundPlayerLib::PlayerState GetPlayerState();
@@ -126,11 +131,15 @@ public:
 	void GetPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	int32_t GetCurrentSongIndex();
 	int32_t GetQueueSongNames(winrt::Folderify::QueuePageViewModel& queuePageModel);
+	void GetHistory(winrt::Folderify::HistoryPageViewModel& historyPageModel);
 	bool RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
+	bool HistoryEnabled();
 	HWND GetWindowHandle();
 	
 	//Setters
 	bool SetVolumeLevel(double volumeBarValue);
+	void SetHistoryTrackingState(bool historyIsEnabled);
+	void ClearHistory();
 	bool CreateNewPlaylist(const std::wstring& newPlaylistFolderPath, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void UpdatePlaylist(int32_t playlistIndex, winrt::Folderify::PlaylistSelectionPageViewModel& playlistPageModel);
 	void UpdateQueue(int32_t newQueueIndex, winrt::Folderify::QueuePageViewModel& queuePageModel);

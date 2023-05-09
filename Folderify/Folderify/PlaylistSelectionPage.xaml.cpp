@@ -14,6 +14,10 @@ using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 namespace fs = std::filesystem;
 
+
+//TODO: Think about monitoring the folder where the playlist is, to see if it changes and then refresh the playlist if so
+//https://learn.microsoft.com/en-us/windows/win32/fileio/obtaining-directory-change-notifications
+
 namespace winrt::Folderify::implementation
 {
     PlaylistSelectionPage::PlaylistSelectionPage()
