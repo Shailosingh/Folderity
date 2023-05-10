@@ -201,6 +201,9 @@ void MusicController::CloseController()
 	
 	//Save up the queue file
 	UpdateQueueFile();
+
+	//Save up the history file
+	UpdateHistoryFile();
 }
 
 /// <summary>
