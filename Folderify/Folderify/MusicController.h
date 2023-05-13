@@ -31,6 +31,21 @@ enum class HistoryPageEventEnums
 	NumberOfEvents
 };
 
+enum class PlaylistPageEventEnums
+{
+	PlaylistSwitching,
+	PlaylistSwitched,
+	PageClosing,
+	PageClosed,
+	
+	NumberOfOrdinaryEvents,
+
+	//Not ordinary event. Must be closed using FindCloseChangeNotification 
+	RefreshRequired = NumberOfOrdinaryEvents,
+	
+	NumberOfEvents
+};
+
 typedef struct Song
 {
 	std::wstring songNameWithExtension;
@@ -116,6 +131,8 @@ public:
 	HANDLE HistoryPageEvents[static_cast<int>(HistoryPageEventEnums::NumberOfEvents)];
 	bool HistoryThreadRunning;
 	HANDLE VolumeExternallyChanged;
+	HANDLE PlaylistPageEvents[static_cast<int>(PlaylistPageEventEnums::NumberOfEvents)];
+	bool PlaylistThreadRunning;
 
 	//Datafields
 	bool SongPositionBarHeld;

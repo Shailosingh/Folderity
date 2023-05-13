@@ -52,10 +52,12 @@ namespace winrt::Folderify::implementation
             {  
                 case WAIT_OBJECT_0 + static_cast<int>(HistoryPageEventEnums::SongListChanged) :
                     DispatchSongList();
+                    OutputDebugString(L"HISTORY PAGE EVENT: Song list changed\n");
                     break;
                     
                 case WAIT_OBJECT_0 + static_cast<int>(HistoryPageEventEnums::PageClosing):
                     ControllerObject->HistoryThreadRunning = false;
+                    OutputDebugString(L"HISTORY PAGE EVENT: Page closing\n");
                     break;
 
                 //This should never happen and I want to know why if so

@@ -3,7 +3,8 @@ namespace Folderify
 {
     runtimeclass PlaylistInfo : Windows.UI.Xaml.Data.INotifyPropertyChanged
     {
-        PlaylistInfo(String playlistTitle, String numberOfSongs);
+		PlaylistInfo(String playlistPath, String numberOfSongs);
+        String PlaylistPath;
         String PlaylistTitle;
         String NumberOfSongs;
     }

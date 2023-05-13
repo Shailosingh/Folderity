@@ -91,14 +91,17 @@ namespace winrt::Folderify::implementation
 			{
 			case WAIT_OBJECT_0 + static_cast<int>(QueuePageEventEnums::IndexChanged):
 				DispatchSelectedIndex(ControllerObject->GetCurrentSongIndex());
+				OutputDebugString(L"QUEUE PAGE EVENT: Index changed\n");
 				break;
 				
 			case WAIT_OBJECT_0 + static_cast<int>(QueuePageEventEnums::SongListChanged):
 				DispatchSongNames();
+				OutputDebugString(L"QUEUE PAGE EVENT: Song list changed\n");
 				break;
 
 			case WAIT_OBJECT_0 + static_cast<int>(QueuePageEventEnums::PageClosing):
 				ControllerObject->QueueThreadRunning = false;
+				OutputDebugString(L"QUEUE PAGE EVENT: Page closing\n");
 				break;
 
 			//This should never happen and I want to know why if so

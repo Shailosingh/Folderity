@@ -1,13 +1,31 @@
 #include "pch.h"
 #include "PlaylistInfo.h"
 #include "PlaylistInfo.g.cpp"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace winrt::Folderify::implementation
 {
-    PlaylistInfo::PlaylistInfo(hstring const& playlistTitle, hstring const& numberOfSongs)
+    PlaylistInfo::PlaylistInfo(hstring const& playlistPath, hstring const& numberOfSongs)
     {
-		m_playlistTitle = playlistTitle;
+		m_playlistPath = playlistPath;
+		m_playlistTitle = fs::path(playlistPath.c_str()).filename().c_str();
 		m_numberOfSongs = numberOfSongs;
+    }
+
+	hstring PlaylistInfo::PlaylistPath()
+	{
+		return m_playlistPath;
+	}
+
+    void PlaylistInfo::PlaylistPath(hstring const& value)
+    {
+		if (m_playlistPath != value)
+		{
+			m_playlistPath = value;
+			m_propertyChanged(*this, winrt::Windows::UI::Xaml::Data::PropertyChangedEventArgs{ L"PlaylistPath" });
+		}
     }
     
     hstring PlaylistInfo::PlaylistTitle()

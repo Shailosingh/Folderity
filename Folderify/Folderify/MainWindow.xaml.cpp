@@ -17,6 +17,8 @@ namespace winrt::Folderify::implementation
     {
         InitializeComponent();
 
+        Title(L"Folderity");
+
 		//Pass the main window to the MusicController and create instance
         try
         {

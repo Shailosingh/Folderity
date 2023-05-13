@@ -7,7 +7,9 @@ namespace winrt::Folderify::implementation
     {
         PlaylistInfo() = delete;
 
-        PlaylistInfo(hstring const& playlistTitle, hstring const& numberOfSongs);
+        PlaylistInfo(hstring const& playlistPath, hstring const& numberOfSongs);
+        hstring PlaylistPath();
+        void PlaylistPath(hstring const& value);
         hstring PlaylistTitle();
         void PlaylistTitle(hstring const& value);
         hstring NumberOfSongs();
@@ -17,6 +19,7 @@ namespace winrt::Folderify::implementation
 
     private:
 		hstring m_playlistTitle;
+        hstring m_playlistPath;
 		hstring m_numberOfSongs;
 		winrt::event<winrt::Windows::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
     };

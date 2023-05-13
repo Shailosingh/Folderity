@@ -58,9 +58,13 @@ MusicController::MusicController(winrt::Folderify::implementation::MainWindow* m
 	{
 		throw std::exception("Failed to create HistoryMutex\n");
 	}
-	
-	//Test this out. DELETE .vs folder,CLEAN and REBUILD solution first
-	MainWindowPointer->Title(L"Folderity");
+
+	/*
+	NOTE: Playlist events shall be initializedand deinitialized in the Playlist page, since that is the actual only place they are triggered and used.
+	Unless the program closes on the playlist page. When this happens, a page's destructor does not run FOR SOME REASON (I'm mad Microsoft >:( ) so we have
+	to clean up the events here, even though we never would have needed to trigger them from here 
+	*/
+	PlaylistThreadRunning = false;
 	
 	//Initialize the SoundPlayer
 	HRESULT hr = MMFSoundPlayer::CreateInstance(&SoundPlayer);
@@ -176,7 +180,7 @@ void MusicController::CloseController()
 	SoundPlayer->Shutdown();
 	VolumeExternallyChanged = nullptr;
 
-	//Signal the Queue and History pages to close down and then, close up all handles controlled by the MusicController
+	//Signal the page threads to close down and then, close up all handles controlled by the MusicController
 	if (QueueThreadRunning)
 	{
 		SetEvent(QueuePageEvents[static_cast<int>(QueuePageEventEnums::PageClosing)]);
@@ -195,6 +199,19 @@ void MusicController::CloseController()
 	for (int index = 0; index < static_cast<int>(HistoryPageEventEnums::NumberOfEvents); index++)
 	{
 		CloseHandle(HistoryPageEvents[index]);
+	}
+
+	if (PlaylistThreadRunning)
+	{
+		SetEvent(PlaylistPageEvents[static_cast<int>(PlaylistPageEventEnums::PageClosing)]);
+		WaitForSingleObject(PlaylistPageEvents[static_cast<int>(PlaylistPageEventEnums::PageClosed)], INFINITE);
+
+		//These handles are only open if the playlist thread was open
+		for (int index = 0; index < static_cast<int>(PlaylistPageEventEnums::NumberOfOrdinaryEvents); index++)
+		{
+			CloseHandle(PlaylistPageEvents[index]);
+		}
+		FindCloseChangeNotification(ControllerObject->PlaylistPageEvents[static_cast<int>(PlaylistPageEventEnums::RefreshRequired)]);
 	}
 	
 	CloseHandle(QueueMutex);
@@ -1005,7 +1022,7 @@ void MusicController::GetPlaylistNames(winrt::Folderify::PlaylistSelectionPageVi
 	//Fill in all playlists
 	for (uint32_t index = 0; index < AllPlaylists.size(); index++)
 	{
-		playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(fs::path(AllPlaylists[index].playlistPath).stem().c_str(), std::to_wstring(AllPlaylists[index].songNamesWithExtension.size())));
+		playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(AllPlaylists[index].playlistPath, std::to_wstring(AllPlaylists[index].songNamesWithExtension.size())));
 	}
 }
 
@@ -1180,7 +1197,7 @@ bool MusicController::RefreshPlaylistSongNames(int32_t playlistIndex, winrt::Fol
 	GetPlaylistSongNames(playlistIndex, playlistPageModel);
 
 	//Update the playlist's count in the model
-	playlistPageModel.Playlists().SetAt(playlistIndex, winrt::Folderify::PlaylistInfo(fs::path(AllPlaylists[playlistIndex].playlistPath).stem().c_str(), std::to_wstring(AllPlaylists[playlistIndex].songNamesWithExtension.size())));
+	playlistPageModel.Playlists().SetAt(playlistIndex, winrt::Folderify::PlaylistInfo(AllPlaylists[playlistIndex].playlistPath, std::to_wstring(AllPlaylists[playlistIndex].songNamesWithExtension.size())));
 	
 	return true;
 }
@@ -1266,7 +1283,7 @@ bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPat
 			UpdatePlaylistMasterFile();
 			
 			//If the songs were loaded, add the playlist to the list
-			playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(fs::path(newPlaylistFolderPath).stem().c_str(), std::to_wstring(AllPlaylists[AllPlaylists.size() - 1].songNamesWithExtension.size())));
+			playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(newPlaylistFolderPath, std::to_wstring(AllPlaylists[AllPlaylists.size() - 1].songNamesWithExtension.size())));
 			
 			return true;
 		}
@@ -1308,7 +1325,7 @@ bool MusicController::CreateNewPlaylist(const std::wstring& newPlaylistFolderPat
 	UpdatePlaylistMasterFile();
 	
 	//Update UI
-	playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(fs::path(newPlaylistFolderPath).stem().c_str(), std::to_wstring(newPlaylist.songNamesWithExtension.size())));
+	playlistPageModel.Playlists().Append(winrt::Folderify::PlaylistInfo(newPlaylistFolderPath, std::to_wstring(newPlaylist.songNamesWithExtension.size())));
 	
 	//Playlist successfully created
 	return true;
