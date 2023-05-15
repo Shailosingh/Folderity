@@ -5,6 +5,8 @@
 #include <chrono>
 #include <format>
 #include <thread>
+#include <algorithm>
+#include <random>
 #include <SharedWindowVariables.h>
 
 using namespace MMFSoundPlayerLib;
@@ -1526,6 +1528,30 @@ void MusicController::LoopToggle()
 	IsLoopEnabled = !IsLoopEnabled;
 	DispatchLoopButtonIcon();
 	
+}
+
+void MusicController::Shuffle()
+{
+	//Handle the empty queue case
+	if (PlayerQueue.empty())
+	{
+		return;
+	}
+
+	//Ensure only one thread is changing around the queue and starting songs at once
+	WaitForSingleObject(QueueMutex, INFINITE);
+
+	//Shuffle the queue
+	std::shuffle(PlayerQueue.begin(), PlayerQueue.end(), std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count()));
+
+	//Close up the queue
+	ReleaseMutex(QueueMutex);
+
+	//Reload the song
+	LoadSongIntoPlayer(0);
+
+	//Signal that the queue has obviously changed
+	SetEvent(QueuePageEvents[static_cast<int>(QueuePageEventEnums::SongListChanged)]);
 }
 
 //Dispatcher fuctions------------------------------------------------------------------------------

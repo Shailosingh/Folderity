@@ -88,7 +88,7 @@ namespace winrt::Folderify::implementation
 
     void MainWindow::ShuffleButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
     {
-        //TODO: Shuffle current queue
+        ControllerObject->Shuffle();
     }
     
     void MainWindow::PreviousButton_Tapped(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::TappedRoutedEventArgs const& e)
