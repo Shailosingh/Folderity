@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "MainWindow.xaml.h"
-#include "winrt/Windows.UI.Xaml.Interop.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
 #endif
@@ -30,6 +29,12 @@ namespace winrt::Folderify::implementation
             OutputDebugStringA(error.c_str());
             exit(1);
 		}
+
+        //Set app icon
+        HWND windowHandle = ControllerObject->GetWindowHandle();
+		Microsoft::UI::WindowId windowId = Microsoft::UI::GetWindowIdFromWindow(windowHandle);
+		auto appWindow = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
+        appWindow.SetIcon(L"Icon.ico");
 
 		//Set the volume bar to the max volume
         VolumeControlSlider().Value(VolumeControlSlider().Maximum());

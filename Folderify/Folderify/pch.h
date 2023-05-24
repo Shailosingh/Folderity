@@ -42,3 +42,7 @@
 //For handling folder picker
 #include <winrt/Windows.Storage.Pickers.h>
 #include <Shobjidl.h>
+
+//Getting app window
+#include <winrt/Microsoft.UI.Windowing.h>
+#include <winrt/Microsoft.UI.Interop.h>
