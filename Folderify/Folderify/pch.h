@@ -46,3 +46,6 @@
 //Getting app window
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Microsoft.UI.Interop.h>
+
+//Image header
+#include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>

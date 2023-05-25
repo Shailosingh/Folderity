@@ -123,6 +123,7 @@ private:
 	void DispatchLoopButtonIcon();
 	void DispatchTrackBarToggle(bool isEnabled);
 	void DispatchVolumeBarValue();
+	void DispatchSongImage(std::wstring imagePath);
 	
 public:
 	//Public events (TODO: Use these for something. Especially if you don't make the lists public)

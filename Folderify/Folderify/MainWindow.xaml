@@ -43,7 +43,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Image x:Name="SongImage" Grid.Column="0" Stretch="Fill" Margin="0,0,5,0" Source="//Assets/Logo.png" />
+                <Image x:Name="SongImage" Grid.Column="0" Stretch="Fill" Margin="0,0,5,0" Source="///Assets/Logo.png" />
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,5,5,5">
                     <TextBlock x:Name="SongNameBlock" Text="Song Name" FontWeight="Bold" Foreground="White" HorizontalAlignment="Left"/>

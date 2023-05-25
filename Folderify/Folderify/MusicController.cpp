@@ -952,7 +952,7 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 	DispatchTrackBarToggle(false);
 	DispatchSongTitle(L"Waiting For Song...");
 	DispatchPlaylistTitle(L"Waiting For Playlist...");
-	//TODO: Set image to default
+	//DispatchSongImage(L"ms-appx:///Assets/Logo.png");
 
 	//Get the whole path of the song
 	fs::path songPath = fs::path(PlayerQueue[index].playlistPath) / PlayerQueue[index].songNameWithExtension;
@@ -1764,6 +1764,30 @@ void MusicController::DispatchVolumeBarValue()
 		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [this]()
 			{
 				MainWindowPointer->VolumeControlSlider().Value(GetNewVolumeBarValue());
+			});
+	}
+}
+
+void MusicController::DispatchSongImage(std::wstring imagePath)
+{
+	//Temporarily use this namespace to keep code shorter
+	using namespace winrt::Microsoft::UI::Xaml::Media::Imaging;
+	
+	if (MainWindowPointer->DispatcherQueue().HasThreadAccess())
+	{
+		BitmapImage newImage;
+		winrt::Windows::Foundation::Uri imageUri(imagePath);
+		newImage.UriSource(imageUri);
+		MainWindowPointer->SongImage().Source(newImage);
+	}
+	else
+	{
+		bool isQueued = MainWindowPointer->DispatcherQueue().TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Normal, [this, imagePath]()
+			{
+				BitmapImage newImage;
+				winrt::Windows::Foundation::Uri imageUri(imagePath);
+				newImage.UriSource(imageUri);
+				MainWindowPointer->SongImage().Source(newImage);
 			});
 	}
 }
