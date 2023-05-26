@@ -34,7 +34,7 @@ namespace winrt::Folderify::implementation
         HWND windowHandle = ControllerObject->GetWindowHandle();
 		Microsoft::UI::WindowId windowId = Microsoft::UI::GetWindowIdFromWindow(windowHandle);
 		auto appWindow = Microsoft::UI::Windowing::AppWindow::GetFromWindowId(windowId);
-        appWindow.SetIcon(L"ms-appx:///Assets/Icon.ico");
+        appWindow.SetIcon(L"Icon.ico");
 
 		//Set the volume bar to the max volume
         VolumeControlSlider().Value(VolumeControlSlider().Maximum());

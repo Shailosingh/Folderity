@@ -107,6 +107,7 @@ private:
 
 	//General helpers
 	void AddCurrentSongToHistory();
+	std::wstring GetSongImage(const std::filesystem::path& songPath);
 
 	//Song loaders
 	void LoadSongIntoPlayer(uint32_t index);
@@ -126,7 +127,7 @@ private:
 	void DispatchSongImage(std::wstring imagePath);
 	
 public:
-	//Public events (TODO: Use these for something. Especially if you don't make the lists public)
+	//Public events
 	HANDLE QueuePageEvents[static_cast<int>(QueuePageEventEnums::NumberOfEvents)];
 	bool QueueThreadRunning;
 	HANDLE HistoryPageEvents[static_cast<int>(HistoryPageEventEnums::NumberOfEvents)];

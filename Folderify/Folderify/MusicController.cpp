@@ -853,6 +853,39 @@ void MusicController::AddCurrentSongToHistory()
 	ReleaseMutex(HistoryMutex);
 }
 
+/// <summary>
+/// Takes the path to the song to be played and checks if there exists cover art for it.
+/// It does this by exchanging the file extension with one of the valid image extensions and 
+/// checking if it exists.
+/// </summary>
+/// <param name="songPath">Path to be song that needs song image</param>
+/// <returns>Path to the song image</returns>
+std::wstring MusicController::GetSongImage(const std::filesystem::path& songPath)
+{
+	//Define vector of valid image extensions
+	std::vector<std::wstring> validImageExtensions = { L".jpg", L".jpeg", L".png", L".bmp" };
+
+	//Create a path to the song image
+	std::filesystem::path songImagePath = songPath;
+
+	//Loop through the valid image extensions
+	for (const std::wstring& imageExtension : validImageExtensions)
+	{
+		//Replace the file extension with the current image extension
+		songImagePath.replace_extension(imageExtension);
+
+		//Check if the image exists
+		if (std::filesystem::exists(songImagePath))
+		{
+			//If it does, return the path to the image
+			return songImagePath;
+		}
+	}
+
+	//If none of the valid images exist, return the default image
+	return L"ms-appx:///Assets/Logo.png";
+}
+
 //Song Loaders-------------------------------------------------------------------------------------
 
 /// <summary>
@@ -952,7 +985,7 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 	DispatchTrackBarToggle(false);
 	DispatchSongTitle(L"Waiting For Song...");
 	DispatchPlaylistTitle(L"Waiting For Playlist...");
-	//DispatchSongImage(L"ms-appx:///Assets/Logo.png");
+	DispatchSongImage(L"ms-appx:///Assets/Logo.png");
 
 	//Get the whole path of the song
 	fs::path songPath = fs::path(PlayerQueue[index].playlistPath) / PlayerQueue[index].songNameWithExtension;
@@ -972,7 +1005,7 @@ bool MusicController::LoadSongIntoPlayer_Aux(uint32_t index)
 	DispatchTrackBarToggle(true);
 	DispatchSongTitle(fs::path(PlayerQueue[index].songNameWithExtension).stem());
 	DispatchPlaylistTitle(fs::path(PlayerQueue[index].playlistPath).filename());
-	//TODO: Set image to song's filename with either png, jpeg jpg extension
+	DispatchSongImage(GetSongImage(songPath));
 
 	return true;
 }

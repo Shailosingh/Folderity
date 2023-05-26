@@ -58,4 +58,9 @@
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icon.ico">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
