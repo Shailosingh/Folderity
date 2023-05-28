@@ -5,7 +5,8 @@
     x:Class="Folderify.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Folderify">
+    xmlns:local="using:Folderify"
+    RequestedTheme="Dark">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

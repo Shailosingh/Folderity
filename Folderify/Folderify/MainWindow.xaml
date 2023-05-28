@@ -18,11 +18,11 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Icon="MusicInfo"  Content="Queue" Tag="Queue"/>
                 <NavigationViewItem Icon="Library"  Content="Playlists" Tag="Playlists"/>
-                <NavigationViewItem Icon="Audio"  Content="Songs" Tag="Songs"/>
+                <NavigationViewItem Icon="BrowsePhotos"  Content="History" Tag="History"/>
             </NavigationView.MenuItems>
             
             <NavigationView.FooterMenuItems>
-                <NavigationViewItem Icon="BrowsePhotos"  Content="History" Tag="History"/>
+                
             </NavigationView.FooterMenuItems>
 
             <Frame x:Name="ContentFrame"/>

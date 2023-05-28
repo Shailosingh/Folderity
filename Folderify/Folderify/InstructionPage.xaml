@@ -1,0 +1,109 @@
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<Page
+    x:Class="Folderify.InstructionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Folderify"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left"  VerticalAlignment="Top">
+            <TextBlock FontSize="22" FontWeight="Bold" Foreground="White" Margin="20,0,0,0">
+                <Underline>Getting Started</Underline>
+            </TextBlock>
+
+            <Grid Height="Auto">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border BorderThickness="1" BorderBrush="Gray">
+                    <Image Source="///Assets/CreatePlaylist.png" Grid.Column="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <TextBlock FontSize="16" TextWrapping="WrapWholeWords" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    First of all, you want to create a playlist. Do this by navigating to the <Bold>Playlist</Bold> page and 
+                    pressing the <Bold>+</Bold> button. Here you can then select the folder you want to create your playlist from.
+                    Every single MP3 and WAV shall be automatically imported into the app and managed, for playback.
+                </TextBlock>
+            </Grid>
+
+            <Grid Height="Auto">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border BorderThickness="1" BorderBrush="Gray">
+                    <Image Source="///Assets/PlaylistPage.png" Grid.Column="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <TextBlock FontSize="16" TextWrapping="WrapWholeWords" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    When the playlist is added, you can then select the playlist from the left list and then select any song from the right list to play it. You can 
+                    also reorder the playlist songs by dragging and dropping the songs in the right list.
+                </TextBlock>
+            </Grid>
+
+            <Grid Height="Auto">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border BorderThickness="1" BorderBrush="Gray">
+                    <Image Source="///Assets/QueuePage.png" Grid.Column="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <TextBlock FontSize="16" TextWrapping="WrapWholeWords" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    To view the currently playing songs and the upcoming songs, visit the <Bold>Queue</Bold> page. You can reorder
+                    this queue as well.
+                </TextBlock>
+            </Grid>
+
+            <Grid Height="Auto">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border BorderThickness="1" BorderBrush="Gray">
+                    <Image Source="///Assets/HistoryPage.png" Grid.Column="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <TextBlock FontSize="16" TextWrapping="WrapWholeWords" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    To view your History, clear it or disable history tracking, visit the <Bold>History</Bold> page.
+                </TextBlock>
+            </Grid>
+
+            <Grid Height="Auto">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" BorderBrush="Gray">
+                        <Image Source="///Assets/FileExplorer.png" Grid.Column="0" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <Image Grid.Row="1" Source="///Assets/CoverArt.png" Stretch="Uniform" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                </Grid>
+
+                <TextBlock FontSize="16" Grid.Column="1" TextWrapping="WrapWholeWords" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    If you want to give your song custom cover art, navigate to the directory where your song is and drop the image file in there
+                    with the same name as the song.
+                </TextBlock>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

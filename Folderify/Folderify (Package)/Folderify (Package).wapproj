@@ -49,8 +49,14 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\CoverArt.png" />
+    <Content Include="Assets\CreatePlaylist.png" />
+    <Content Include="Assets\FileExplorer.png" />
+    <Content Include="Assets\HistoryPage.png" />
     <Content Include="Assets\Icon.ico" />
     <Content Include="Assets\Logo.png" />
+    <Content Include="Assets\PlaylistPage.png" />
+    <Content Include="Assets\QueuePage.png" />
     <Content Include="Images\LargeTile.scale-100.png" />
     <Content Include="Images\LargeTile.scale-125.png" />
     <Content Include="Images\LargeTile.scale-150.png" />

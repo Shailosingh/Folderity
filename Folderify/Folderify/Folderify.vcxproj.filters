@@ -10,6 +10,7 @@
     <Page Include="PlaylistSelectionPage.xaml" />
     <Page Include="SongsPage.xaml" />
     <Page Include="HistoryPage.xaml" />
+    <Page Include="InstructionPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />

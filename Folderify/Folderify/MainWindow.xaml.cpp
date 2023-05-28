@@ -38,6 +38,9 @@ namespace winrt::Folderify::implementation
 
 		//Set the volume bar to the max volume
         VolumeControlSlider().Value(VolumeControlSlider().Maximum());
+
+        //Set the page to the instructions page
+        ContentFrame().Navigate(xaml_typename<Folderify::InstructionPage>());
     }
 
     int32_t MainWindow::MyProperty()
@@ -56,7 +59,7 @@ namespace winrt::Folderify::implementation
         if (args.IsSettingsInvoked())
         {
             //Navigate to Settings Page
-            ContentFrame().Navigate(xaml_typename<Folderify::SettingsPage>());
+            ContentFrame().Navigate(xaml_typename<Folderify::InstructionPage>()); //Temporarily go to instructions page until a real setup page is setup
         }
 
         //Handle navigations to every page
@@ -73,7 +76,7 @@ namespace winrt::Folderify::implementation
             {
                 ContentFrame().Navigate(xaml_typename<Folderify::PlaylistSelectionPage>());
             }
-            else if (tagValue == L"Songs")
+            else if (tagValue == L"Songs") //Temporarily disabled <NavigationViewItem Icon="Audio"  Content="Songs" Tag="Songs"/>
             {
                 ContentFrame().Navigate(xaml_typename<Folderify::SongsPage>());
             }

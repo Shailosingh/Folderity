@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace Folderify
+{
+    [default_interface]
+    runtimeclass InstructionPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        InstructionPage();
+        Int32 MyProperty;
+    }
+}

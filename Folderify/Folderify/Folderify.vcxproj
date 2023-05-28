@@ -133,6 +133,10 @@
       <SubType>Code</SubType>
     </ClInclude>
     <ClInclude Include="HistoryPageViewModel.h" />
+    <ClInclude Include="InstructionPage.xaml.h">
+      <DependentUpon>InstructionPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="MusicController.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
@@ -168,6 +172,9 @@
     <Page Include="HistoryPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="InstructionPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml" />
     <Page Include="PlaylistSelectionPage.xaml">
       <SubType>Designer</SubType>
@@ -188,6 +195,10 @@
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="HistoryPageViewModel.cpp" />
+    <ClCompile Include="InstructionPage.xaml.cpp">
+      <DependentUpon>InstructionPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
     <ClCompile Include="MusicController.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -231,6 +242,10 @@
       <SubType>Code</SubType>
     </Midl>
     <Midl Include="HistoryPageViewModel.idl" />
+    <Midl Include="InstructionPage.idl">
+      <DependentUpon>InstructionPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
     <Midl Include="MainWindow.idl">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
