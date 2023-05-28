@@ -29,7 +29,8 @@
                 <TextBlock FontSize="16" TextWrapping="WrapWholeWords" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center">
                     First of all, you want to create a playlist. Do this by navigating to the <Bold>Playlist</Bold> page and 
                     pressing the <Bold>+</Bold> button. Here you can then select the folder you want to create your playlist from.
-                    Every single MP3 and WAV shall be automatically imported into the app and managed, for playback.
+                    Every single MP3 and WAV shall be automatically imported into the app and managed, for playback. New songs you add
+                    to this folder will also automatically be imported into the app and added to the end of the playlist by default.
                 </TextBlock>
             </Grid>
 
