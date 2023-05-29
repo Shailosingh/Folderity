@@ -14,3 +14,6 @@ automatically organize their music into playlists without having to manually add
 Folderity is programmed in C++ and uses Microsoft Media Foundation (MMF) for the audio playing component. MMF is rather complex to use, so to simplify its use, I created
 a helper library called [MMFSoundPlayer](https://github.com/Shailosingh/MMFSoundPlayer) to help programmers with quickly being able to play audio files in their C++ 
 programs.
+
+## Privacy Policy
+This app is not connected to the internet and does not collect any user data. All data given to the app (playlists and songs) are kept on your local drive.
