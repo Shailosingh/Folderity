@@ -6,11 +6,14 @@ Folderity is a fast and lightweight music player for Windows that allows users t
 song is added or removed from the folder. This is very convenient for anyone who has a large collection of music files (MP3's, WAV's, etc.), since it allows the user to 
 automatically organize their music into playlists without having to manually add songs to the playlist one at a time.
 
-![image](https://user-images.githubusercontent.com/52577016/229377824-e16905b2-5e4c-40e7-835d-a8106c0cf9cf.png)
+![PlaylistPage](https://github.com/Shailosingh/Folderity/assets/52577016/f4031401-df94-4c28-9dc4-79d5f6617be8)
 
-![image](https://user-images.githubusercontent.com/52577016/229377874-6c815e0d-0f00-45a3-aa60-e6d53033ad1f.png)
+![QueuePage](https://github.com/Shailosingh/Folderity/assets/52577016/9f8902f5-6598-4bad-bbcb-4f92f9ad519e)
 
 ## Technologies
 Folderity is programmed in C++ and uses Microsoft Media Foundation (MMF) for the audio playing component. MMF is rather complex to use, so to simplify its use, I created
 a helper library called [MMFSoundPlayer](https://github.com/Shailosingh/MMFSoundPlayer) to help programmers with quickly being able to play audio files in their C++ 
 programs.
+
+## Privacy Policy
+This app is not connected to the internet and does not collect any user data. All data given to the app (playlists and songs) are kept on your local drive.
