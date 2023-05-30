@@ -7,13 +7,13 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="81b012d7-ad3b-4201-afaa-78011f21efff"
-    Publisher="CN=compu"
-    Version="1.0.0.0" />
+    Name="61424ShailendraSinghSoftw.Folderity"
+    Publisher="CN=A0D006BA-D01D-40DC-903A-B1BBE749D3F3"
+    Version="1.0.1.0" />
 
   <Properties>
     <DisplayName>Folderity</DisplayName>
-    <PublisherDisplayName>compu</PublisherDisplayName>
+    <PublisherDisplayName>Shailendra Singh Software</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,7 +32,7 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Folderity"
-        Description="Folderity"
+        Description="Folderity is a fast and lightweight music player for Windows that allows users to create custom playlists in folders on their computer that automatically update when a song is added or removed from the folder. This is very convenient for anyone who has a large collection of music files (MP3&apos;s, WAV&apos;s, etc.), since it allows the user to automatically organize their music into playlists without having to manually add songs to the playlist one at a time."
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
